@@ -29,3 +29,4 @@ parknovaaa/frontend/package-lock.json
 *.swo
 .vscode/
 .DS_Store
+.vercel

@@ -1,0 +1,17 @@
+# Ignore backend and build artifacts not needed for the frontend deployment
+.PS* 
+.DS_Store
+.git
+.github
+.vscode
+Parknova/
+parknovaaa/target/
+parknovaaa/*.log
+parknovaaa/*.db
+parknovaaa/instance/
+parknovaaa/__pycache__/
+parknovaaa/models/__pycache__/
+parknovaaa/routes/__pycache__/
+parknovaaa/services/__pycache__/
+parknovaaa/frontend/node_modules/
+parknovaaa/node_modules/

@@ -1,13 +1,9 @@
 {
-  "version": 3,
-  "name": "parknova-frontend",
+  "version": 2,
   "builds": [
     {
       "src": "parknovaaa/frontend/package.json",
-      "use": "@vercel/static-build",
-      "config": {
-        "distDir": "parknovaaa/frontend/dist"
-      }
+      "use": "@vercel/static-build"
     }
   ],
   "routes": [
@@ -15,5 +11,6 @@
       "src": "/(.*)",
       "dest": "/index.html"
     }
-  ]
+  ],
+  "outputDirectory": "dist"
 }

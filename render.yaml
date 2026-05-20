@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: parknova-backend
+    env: java
+    plan: free
+    branch: appmod/github-push
+    buildCommand: cd parknovaaa && mvn -B clean package -DskipTests
+    startCommand: cd parknovaaa && java -jar target/parknova-1.0.0.jar
+    envVars:
+      - key: SPRING_DATASOURCE_URL
+        value: jdbc:h2:mem:parknova;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+      - key: SPRING_JPA_DATABASE_PLATFORM
+        value: org.hibernate.dialect.H2Dialect
