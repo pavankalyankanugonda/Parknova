@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: html}">
+<head th:replace="~{layout :: head}"></head>
+<body>
+  <main th:fragment="content" class="space-y-12 animate-in fade-in slide-in-from-bottom-5 duration-700">
+    <!-- Header Section -->
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center bg-white dark:bg-gray-800 p-8 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700">
+      <div>
+        <h2 class="text-3xl font-bold text-gray-900 dark:text-white">Booking History</h2>
+        <p class="text-gray-500 dark:text-gray-400 mt-2">Review your past parking sessions and access QR codes.</p>
+      </div>
+      <div class="mt-6 md:mt-0 glass border-blue-500/30 p-4 rounded-2xl flex items-center space-x-6">
+        <div class="bg-blue-600/10 p-3 rounded-xl text-blue-600">
+          <i class="fas fa-history text-2xl"></i>
+        </div>
+        <div class="text-left">
+          <p class="text-xs font-bold uppercase tracking-widest text-blue-600 mb-1">Total Visits</p>
+          <p class="text-lg font-bold" th:text="${#lists.size(bookings)}">0</p>
+          <p class="text-sm text-gray-500">Since Joining</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Feedback Notifications for Checkout -->
+    <div th:if="${param.completed}" class="bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 px-6 py-4 rounded-2xl border border-blue-200 dark:border-blue-800 shadow-sm flex items-center space-x-4">
+      <i class="fas fa-receipt text-xl"></i>
+      <span class="font-medium">Checkout complete! Total Fee: <span class="font-bold underline" th:text="'₹' + ${param.fee}">₹0</span></span>
+    </div>
+
+    <!-- Booking Cards Container -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+      <div th:each="booking : ${bookings}" 
+           class="glass rounded-3xl overflow-hidden group hover:shadow-2xl transition-all duration-500 border-2 hover:border-blue-500 dark:hover:border-blue-500 border-transparent bg-white dark:bg-gray-800">
+        
+        <!-- Header Info -->
+        <div class="p-8 border-b border-gray-100 dark:border-gray-800">
+          <div class="flex justify-between items-start mb-6">
+            <div class="space-y-1">
+              <span class="text-xs font-bold uppercase tracking-widest text-blue-600">Reference ID</span>
+              <h4 class="text-xl font-black text-gray-900 dark:text-white" th:text="${booking.qrCode}">PKN-XXXXX</h4>
+            </div>
+            <div th:classappend="${booking.active ? 'bg-emerald-500' : 'bg-gray-400'}" class="w-3 h-3 rounded-full flex items-center justify-center relative">
+              <span th:if="${booking.active}" class="absolute w-full h-full bg-emerald-400 rounded-full animate-ping opacity-70"></span>
+            </div>
+          </div>
+
+          <div class="flex items-center space-x-6 bg-gray-50 dark:bg-gray-900/50 p-6 rounded-2xl mb-6">
+             <div class="bg-white dark:bg-gray-800 p-3 rounded-xl shadow-sm text-2xl text-blue-600">
+               <i class="fas fa-parking"></i>
+             </div>
+             <div class="text-left">
+               <p class="text-xs font-bold uppercase tracking-widest text-gray-400 mb-1">Parking Slot</p>
+               <p class="text-xl font-bold" th:text="${booking.slot.slotNumber}">A-101</p>
+               <p class="text-sm text-gray-500" th:text="${booking.slot.location}">Floor 1</p>
+             </div>
+          </div>
+
+          <!-- Time Info -->
+          <div class="grid grid-cols-2 gap-4 text-center">
+            <div class="p-4 bg-gray-50 dark:bg-gray-900/30 rounded-2xl">
+              <p class="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-1">Entry Time</p>
+              <p class="text-sm font-bold text-gray-800 dark:text-gray-200" th:text="${#temporals.format(booking.startTime, 'MMM dd, HH:mm')}">Oct 24, 14:30</p>
+            </div>
+            <div class="p-4 bg-gray-50 dark:bg-gray-900/30 rounded-2xl">
+              <p class="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-1">Exit Time</p>
+              <p class="text-sm font-bold text-gray-800 dark:text-gray-200" th:text="${booking.endTime != null ? #temporals.format(booking.endTime, 'MMM dd, HH:mm') : 'Active...'}">Oct 24, 16:30</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- QR and Footer -->
+        <div class="p-8 flex flex-col items-center">
+          <div class="relative group/qr mb-8">
+            <img th:src="'https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=' + ${booking.qrCode}" 
+                 class="w-40 h-40 rounded-2xl p-2 bg-white shadow-xl group-hover/qr:scale-105 transition-transform duration-500 border border-gray-100 dark:border-gray-700"
+                 alt="QR Entry Code">
+            <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover/qr:opacity-100 transition-opacity pointer-events-none">
+              <span class="bg-blue-600 text-white text-[10px] uppercase font-bold px-3 py-1 rounded-full shadow-lg">Scan to Enter</span>
+            </div>
+          </div>
+
+          <div class="w-full flex justify-between items-center bg-gray-50 dark:bg-gray-900/50 p-6 rounded-2xl">
+            <div class="text-left">
+              <p class="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-1">Total Fee</p>
+              <p class="text-2xl font-black text-blue-600" th:text="${booking.totalFee != null ? '₹' + booking.totalFee : '---'}">₹100</p>
+            </div>
+            <div>
+               <span th:if="${booking.active}" class="bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400 px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-widest">In Session</span>
+               <span th:if="${!booking.active}" class="bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-400 px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-widest">Completed</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Empty State -->
+    <div th:if="${#lists.isEmpty(bookings)}" class="text-center py-32 bg-white dark:bg-gray-800 rounded-3xl shadow-sm border border-dashed border-gray-200 dark:border-gray-700">
+      <div class="bg-gray-100 dark:bg-gray-900 w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-8 text-gray-400 dark:text-gray-500">
+        <i class="fas fa-folder-open text-4xl"></i>
+      </div>
+      <h3 class="text-2xl font-black text-gray-800 dark:text-white">No history yet!</h3>
+      <p class="text-gray-500 dark:text-gray-400 mt-2">Start your journey by booking a slot in the dashboard.</p>
+      <a th:href="@{/user/dashboard}" class="mt-10 inline-flex items-center space-x-3 bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-8 rounded-2xl shadow-lg shadow-blue-500/30 transition-all hover:-translate-y-1">
+        <span>Go to Dashboard</span>
+        <i class="fas fa-arrow-right text-xs"></i>
+      </a>
+    </div>
+  </main>
+</body>
+</html>

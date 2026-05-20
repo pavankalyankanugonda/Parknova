@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en" class="">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}ParkNova - Smart Parking Management System{% endblock %}</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Outfit', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    
+    <!-- Custom Style CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="bg-slate-50 text-slate-800 dark:bg-slate-950 dark:text-slate-100 min-h-screen transition-colors duration-300 font-sans">
+
+    <!-- Main Container -->
+    <div class="flex min-h-screen overflow-hidden">
+        
+        <!-- Sidebar Navigation -->
+        {% if current_user.is_authenticated %}
+        <aside id="sidebar" class="fixed inset-y-0 left-0 z-40 w-64 bg-white/70 dark:bg-slate-900/70 border-r border-slate-200 dark:border-slate-800 backdrop-blur-md transition-transform duration-300 transform -translate-x-full lg:translate-x-0 flex flex-col justify-between">
+            <div>
+                <!-- Brand Logo -->
+                <div class="h-16 flex items-center gap-2.5 px-6 border-b border-slate-200 dark:border-slate-800">
+                    <div class="h-9 w-9 bg-indigo-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-indigo-600/30">
+                        <i class="fas fa-parking text-lg"></i>
+                    </div>
+                    <span class="text-xl font-bold tracking-tight bg-gradient-to-r from-indigo-600 to-violet-600 bg-clip-text text-transparent dark:from-indigo-400 dark:to-violet-400">ParkNova</span>
+                </div>
+                
+                <!-- Nav Links -->
+                <nav class="p-4 space-y-1.5">
+                    <a href="{{ url_for('home') }}" class="flex items-center gap-3.5 px-4 py-3 rounded-xl text-slate-600 hover:text-indigo-600 hover:bg-slate-100/50 dark:text-slate-400 dark:hover:text-indigo-400 dark:hover:bg-slate-800/30 transition-all font-medium">
+                        <i class="fas fa-home text-lg"></i>
+                        <span>Home</span>
+                    </a>
+                    
+                    {% if current_user.is_admin() %}
+                    <a href="{{ url_for('admin.dashboard') }}" class="flex items-center gap-3.5 px-4 py-3 rounded-xl {% if request.endpoint == 'admin.dashboard' %}bg-indigo-50 text-indigo-600 dark:bg-indigo-950/30 dark:text-indigo-400{% else %}text-slate-600 hover:text-indigo-600 hover:bg-slate-100/50 dark:text-slate-400 dark:hover:text-indigo-400 dark:hover:bg-slate-800/30{% endif %} transition-all font-medium">
+                        <i class="fas fa-tachometer-alt text-lg"></i>
+                        <span>Admin Dashboard</span>
+                    </a>
+                    {% else %}
+                    <a href="{{ url_for('user.dashboard') }}" class="flex items-center gap-3.5 px-4 py-3 rounded-xl {% if request.endpoint == 'user.dashboard' %}bg-indigo-50 text-indigo-600 dark:bg-indigo-950/30 dark:text-indigo-400{% else %}text-slate-600 hover:text-indigo-600 hover:bg-slate-100/50 dark:text-slate-400 dark:hover:text-indigo-400 dark:hover:bg-slate-800/30{% endif %} transition-all font-medium">
+                        <i class="fas fa-tachometer-alt text-lg"></i>
+                        <span>User Dashboard</span>
+                    </a>
+                    {% endif %}
+                    
+                    <a href="{{ url_for('booking.view_slots') }}" class="flex items-center gap-3.5 px-4 py-3 rounded-xl {% if request.endpoint == 'booking.view_slots' %}bg-indigo-50 text-indigo-600 dark:bg-indigo-950/30 dark:text-indigo-400{% else %}text-slate-600 hover:text-indigo-600 hover:bg-slate-100/50 dark:text-slate-400 dark:hover:text-indigo-400 dark:hover:bg-slate-800/30{% endif %} transition-all font-medium">
+                        <i class="fas fa-th text-lg"></i>
+                        <span>Parking Slots</span>
+                    </a>
+                    
+                    {% if not current_user.is_admin() %}
+                    <a href="{{ url_for('booking.create_booking') }}" class="flex items-center gap-3.5 px-4 py-3 rounded-xl {% if request.endpoint == 'booking.create_booking' %}bg-indigo-50 text-indigo-600 dark:bg-indigo-950/30 dark:text-indigo-400{% else %}text-slate-600 hover:text-indigo-600 hover:bg-slate-100/50 dark:text-slate-400 dark:hover:text-indigo-400 dark:hover:bg-slate-800/30{% endif %} transition-all font-medium">
+                        <i class="fas fa-calendar-check text-lg"></i>
+                        <span>Book Parking</span>
+                    </a>
+                    {% endif %}
+                    
+                    <a href="{{ url_for('user.profile') }}" class="flex items-center gap-3.5 px-4 py-3 rounded-xl {% if request.endpoint == 'user.profile' %}bg-indigo-50 text-indigo-600 dark:bg-indigo-950/30 dark:text-indigo-400{% else %}text-slate-600 hover:text-indigo-600 hover:bg-slate-100/50 dark:text-slate-400 dark:hover:text-indigo-400 dark:hover:bg-slate-800/30{% endif %} transition-all font-medium">
+                        <i class="fas fa-user-circle text-lg"></i>
+                        <span>Profile & Vehicles</span>
+                    </a>
+                </nav>
+            </div>
+            
+            <!-- Sidebar Footer / Logout -->
+            <div class="p-4 border-t border-slate-200 dark:border-slate-800">
+                <a href="{{ url_for('auth.logout') }}" class="flex items-center gap-3.5 px-4 py-3 rounded-xl text-rose-600 hover:bg-rose-50 dark:text-rose-400 dark:hover:bg-rose-950/20 transition-all font-medium">
+                    <i class="fas fa-sign-out-alt text-lg"></i>
+                    <span>Log Out</span>
+                </a>
+            </div>
+        </aside>
+        {% endif %}
+        
+        <!-- Main Content Area -->
+        <div class="flex-1 flex flex-col min-w-0 {% if current_user.is_authenticated %}lg:pl-64{% endif %}">
+            
+            <!-- Navbar Header -->
+            <header class="h-16 border-b border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/70 backdrop-blur-md flex items-center justify-between px-6 z-30">
+                <div class="flex items-center gap-3">
+                    {% if current_user.is_authenticated %}
+                    <button id="sidebar-toggle" class="h-9 w-9 flex lg:hidden items-center justify-center rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    {% else %}
+                    <div class="h-9 w-9 bg-indigo-600 rounded-xl flex items-center justify-center text-white shadow-lg">
+                        <i class="fas fa-parking text-lg"></i>
+                    </div>
+                    <span class="text-xl font-bold bg-gradient-to-r from-indigo-600 to-violet-600 bg-clip-text text-transparent dark:from-indigo-400 dark:to-violet-400">ParkNova</span>
+                    {% endif %}
+                    
+                    <h2 class="text-sm font-semibold text-slate-500 dark:text-slate-400 hidden sm:block">Smart Parking Management System</h2>
+                </div>
+                
+                <div class="flex items-center gap-4">
+                    <!-- Dark/Light Theme Button -->
+                    <button id="theme-toggle" class="h-9 w-9 flex items-center justify-center rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition-all focus:outline-none">
+                        <i id="theme-toggle-moon" class="fas fa-moon"></i>
+                        <i id="theme-toggle-sun" class="fas fa-sun hidden"></i>
+                    </button>
+                    
+                    {% if current_user.is_authenticated %}
+                    <!-- User Profile Dropdown -->
+                    <div class="relative">
+                        <button id="user-menu-btn" class="flex items-center gap-2 px-2.5 py-1.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-850 transition-all focus:outline-none">
+                            <img class="h-8.5 w-8.5 rounded-xl object-cover ring-2 ring-indigo-500/20" 
+                                 src="{{ url_for('static', filename=current_user.profile_pic or 'images/default_avatar.png') }}" 
+                                 onerror="this.src='https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=80&h=80'"
+                                 alt="Avatar">
+                            <span class="text-sm font-medium hidden md:block text-slate-700 dark:text-slate-300">{{ current_user.name }}</span>
+                            <i class="fas fa-chevron-down text-xs text-slate-400 ml-1 hidden md:block"></i>
+                        </button>
+                        
+                        <!-- Dropdown Menu -->
+                        <div id="user-menu-dropdown" class="hidden absolute right-0 mt-2 w-48 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl py-1.5 z-50 animate-fade-in">
+                            <div class="px-4 py-2 border-b border-slate-100 dark:border-slate-800">
+                                <p class="text-xs text-slate-400">Signed in as</p>
+                                <p class="text-sm font-semibold truncate text-slate-800 dark:text-slate-200">{{ current_user.email }}</p>
+                            </div>
+                            <a href="{{ url_for('user.profile') }}" class="flex items-center gap-2.5 px-4 py-2 text-sm text-slate-600 hover:text-indigo-600 hover:bg-slate-50 dark:text-slate-400 dark:hover:text-indigo-400 dark:hover:bg-slate-800/30 transition-all">
+                                <i class="fas fa-user text-xs"></i>
+                                <span>My Profile</span>
+                            </a>
+                            <a href="{{ url_for('auth.logout') }}" class="flex items-center gap-2.5 px-4 py-2 text-sm text-rose-600 hover:bg-rose-50 dark:text-rose-400 dark:hover:bg-rose-950/20 transition-all">
+                                <i class="fas fa-sign-out-alt text-xs"></i>
+                                <span>Log Out</span>
+                            </a>
+                        </div>
+                    </div>
+                    {% else %}
+                    <!-- Guest Authentication Actions -->
+                    <div class="flex items-center gap-2.5">
+                        <a href="{{ url_for('auth.login') }}" class="text-sm font-semibold text-slate-600 hover:text-slate-850 dark:text-slate-300 dark:hover:text-white px-3.5 py-2">Log In</a>
+                        <a href="{{ url_for('auth.register') }}" class="text-sm font-semibold bg-indigo-600 hover:bg-indigo-700 text-white shadow-md shadow-indigo-600/20 px-4 py-2 rounded-xl transition-all">Sign Up</a>
+                    </div>
+                    {% endif %}
+                </div>
+            </header>
+            
+            <!-- Main Content Container -->
+            <main class="flex-1 overflow-y-auto p-6 md:p-8">
+                <!-- Flash Messages Banner -->
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                <div class="mb-6 space-y-2.5">
+                    {% for category, message in messages %}
+                    <div class="p-4 rounded-xl border flex items-center justify-between gap-3 animate-fade-in
+                        {% if category == 'success' %}bg-emerald-50 border-emerald-200 text-emerald-800 dark:bg-emerald-950/20 dark:border-emerald-900/40 dark:text-emerald-400
+                        {% elif category == 'danger' %}bg-rose-50 border-rose-200 text-rose-800 dark:bg-rose-950/20 dark:border-rose-900/40 dark:text-rose-400
+                        {% elif category == 'warning' %}bg-amber-50 border-amber-200 text-amber-800 dark:bg-amber-950/20 dark:border-amber-900/40 dark:text-amber-400
+                        {% else %}bg-sky-50 border-sky-200 text-sky-850 dark:bg-sky-950/20 dark:border-sky-900/40 dark:text-sky-400{% endif %}">
+                        <div class="flex items-center gap-2.5">
+                            <i class="fas 
+                                {% if category == 'success' %}fa-check-circle
+                                {% elif category == 'danger' %}fa-exclamation-circle
+                                {% elif category == 'warning' %}fa-exclamation-triangle
+                                {% else %}fa-info-circle{% endif %} text-lg"></i>
+                            <span class="text-sm font-medium">{{ message }}</span>
+                        </div>
+                        <button class="opacity-50 hover:opacity-100 transition-opacity" onclick="this.parentElement.remove()">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+                {% endwith %}
+                
+                {% block content %}{% endblock %}
+            </main>
+            
+        </div>
+        
+    </div>
+
+    <!-- Toast Notification Overlay -->
+    <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2.5"></div>
+
+    <!-- Socket.IO library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js"></script>
+    
+    <!-- Custom Main JS -->
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

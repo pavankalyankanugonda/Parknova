@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head}"></head>
+<body class="bg-gray-50 dark:bg-gray-900 transition-colors duration-300 h-screen flex items-center justify-center p-6">
+  <div class="glass w-full max-w-md rounded-2xl p-10 shadow-lg border border-white/20 dark:border-white/10 text-center animate-in fade-in duration-1000">
+    <!-- Logo Section -->
+    <div class="mb-10 group">
+      <div class="bg-blue-600 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto text-white text-3xl mb-4 group-hover:scale-110 transition-transform duration-300 shadow-lg shadow-blue-500/30">
+        <i class="fas fa-parking"></i>
+      </div>
+      <h1 class="text-3xl font-bold tracking-tight text-gray-900 dark:text-white">Welcome Back</h1>
+      <p class="text-gray-500 dark:text-gray-400 mt-2">Log in to ParkNova to manage your space.</p>
+    </div>
+
+    <!-- Notifications Section -->
+    <div class="space-y-4 mb-8">
+      <div th:if="${param.logout}" class="bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 px-4 py-3 rounded-xl border border-blue-200 dark:border-blue-800 text-sm flex items-center space-x-3">
+        <i class="fas fa-info-circle"></i>
+        <span>You have been logged out successfully.</span>
+      </div>
+      <div th:if="${param.error}" class="bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300 px-4 py-3 rounded-xl border border-red-200 dark:border-red-800 text-sm flex items-center space-x-3">
+        <i class="fas fa-exclamation-triangle"></i>
+        <span>Invalid username or password. Please try again.</span>
+      </div>
+      <div th:if="${param.success}" class="bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300 px-4 py-3 rounded-xl border border-green-200 dark:border-green-800 text-sm flex items-center space-x-3">
+        <i class="fas fa-check-circle"></i>
+        <span>Registration successful! Please log in below.</span>
+      </div>
+    </div>
+
+    <!-- Login Form -->
+    <form th:action="@{/login}" method="post" class="space-y-6">
+      <div class="text-left">
+        <label for="username" class="block text-sm font-semibold mb-2 ml-1 text-gray-700 dark:text-gray-300 uppercase tracking-widest opacity-70">Username</label>
+        <div class="relative">
+          <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm"><i class="fas fa-user"></i></span>
+          <input type="text" id="username" name="username" required class="w-full bg-gray-100/50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl py-4 pl-12 pr-4 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all dark:text-white" placeholder="Enter your username">
+        </div>
+      </div>
+
+      <div class="text-left">
+        <label for="password" class="block text-sm font-semibold mb-2 ml-1 text-gray-700 dark:text-gray-300 uppercase tracking-widest opacity-70">Password</label>
+        <div class="relative">
+          <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm"><i class="fas fa-lock"></i></span>
+          <input type="password" id="password" name="password" required class="w-full bg-gray-100/50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl py-4 pl-12 pr-4 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all dark:text-white" placeholder="Enter your password">
+        </div>
+      </div>
+
+      <div class="flex items-center justify-between text-xs font-semibold py-1">
+        <label class="flex items-center space-x-2 cursor-pointer group">
+          <input type="checkbox" class="w-4 h-4 rounded text-blue-600 focus:ring-blue-500 transition-all border-gray-300 dark:border-gray-600 dark:bg-gray-700">
+          <span class="text-gray-500 dark:text-gray-400 group-hover:text-blue-500 transition-colors">Remember me</span>
+        </label>
+        <a href="#" class="text-blue-600 hover:text-blue-700 transition-colors">Forgot Password?</a>
+      </div>
+
+      <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 active:scale-[0.98] text-white font-bold py-4 rounded-xl shadow-lg shadow-blue-500/30 transition-all duration-300 flex items-center justify-center space-x-2">
+        <span>Sign In</span>
+        <i class="fas fa-arrow-right text-xs opacity-70"></i>
+      </button>
+    </form>
+
+    <div class="mt-10 border-t border-gray-200 dark:border-gray-800 pt-8 flex flex-col items-center">
+      <p class="text-gray-500 dark:text-gray-400 text-sm">Don't have an account yet?</p>
+      <a th:href="@{/register}" class="mt-4 font-bold text-blue-600 hover:text-blue-700 transition-colors flex items-center space-x-2">
+        <span>Create New Account</span>
+        <i class="fas fa-user-plus text-sm"></i>
+      </a>
+    </div>
+  </div>
+</body>
+</html>

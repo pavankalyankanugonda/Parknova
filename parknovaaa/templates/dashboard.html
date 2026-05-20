@@ -1,0 +1,292 @@
+{% extends 'base.html' %}
+
+{% block title %}User Dashboard - ParkNova{% endblock %}
+
+{% block content %}
+<div class="space-y-8 max-w-6xl mx-auto">
+    
+    <!-- Welcome Header -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+            <h1 class="text-3xl font-extrabold text-slate-800 dark:text-white">Hello, {{ current_user.name }}!</h1>
+            <p class="text-sm text-slate-500 dark:text-slate-400">Welcome to your parking console. Monitor slot stats and active bookings below.</p>
+        </div>
+        <div class="flex items-center gap-3">
+            <a href="{{ url_for('booking.create_booking') }}" class="px-5 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold shadow-lg shadow-indigo-600/20 transition-all text-sm flex items-center gap-2">
+                <i class="fas fa-plus"></i> Book Parking Slot
+            </a>
+        </div>
+    </div>
+    
+    <!-- Stats Cards Grid -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        <!-- Available Slots -->
+        <div class="glass-panel p-5 rounded-2xl border flex items-center gap-4 bg-emerald-50/20 dark:bg-emerald-950/10 border-emerald-100 dark:border-emerald-900/30">
+            <div class="h-12 w-12 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-xl">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <div>
+                <p class="text-xs font-semibold text-slate-450 dark:text-slate-400 uppercase tracking-wider">Available Slots</p>
+                <h3 class="text-2xl font-bold mt-0.5" id="avail-slots-count">{{ available_slots }}</h3>
+            </div>
+        </div>
+        
+        <!-- Occupied Slots -->
+        <div class="glass-panel p-5 rounded-2xl border flex items-center gap-4 bg-rose-50/20 dark:bg-rose-950/10 border-rose-100 dark:border-rose-900/30">
+            <div class="h-12 w-12 rounded-xl bg-rose-500/10 text-rose-600 dark:text-rose-400 flex items-center justify-center text-xl">
+                <i class="fas fa-times-circle"></i>
+            </div>
+            <div>
+                <p class="text-xs font-semibold text-slate-450 dark:text-slate-400 uppercase tracking-wider">Occupied Slots</p>
+                <h3 class="text-2xl font-bold mt-0.5" id="occ-slots-count">{{ occupied_slots }}</h3>
+            </div>
+        </div>
+        
+        <!-- Registered Vehicles -->
+        <div class="glass-panel p-5 rounded-2xl border flex items-center gap-4 bg-indigo-50/20 dark:bg-indigo-950/10 border-indigo-100 dark:border-indigo-900/30">
+            <div class="h-12 w-12 rounded-xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center text-xl">
+                <i class="fas fa-car"></i>
+            </div>
+            <div>
+                <p class="text-xs font-semibold text-slate-450 dark:text-slate-400 uppercase tracking-wider">My Vehicles</p>
+                <h3 class="text-2xl font-bold mt-0.5">{{ vehicles|length }}</h3>
+            </div>
+        </div>
+        
+        <!-- Total System Slots -->
+        <div class="glass-panel p-5 rounded-2xl border flex items-center gap-4 bg-slate-100/50 dark:bg-slate-800/10 border-slate-200 dark:border-slate-800">
+            <div class="h-12 w-12 rounded-xl bg-slate-500/10 text-slate-600 dark:text-slate-400 flex items-center justify-center text-xl">
+                <i class="fas fa-th-large"></i>
+            </div>
+            <div>
+                <p class="text-xs font-semibold text-slate-450 dark:text-slate-400 uppercase tracking-wider">Total Slots</p>
+                <h3 class="text-2xl font-bold mt-0.5">{{ total_slots }}</h3>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Active Parking Passes Section -->
+    <div class="space-y-4">
+        <h2 class="text-lg font-bold text-slate-700 dark:text-slate-300 flex items-center gap-2">
+            <i class="fas fa-ticket-alt text-indigo-500"></i> Active Parking Passes
+        </h2>
+        
+        {% if active_bookings %}
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {% for booking in active_bookings %}
+                    <div class="glass-panel p-6 rounded-2xl border border-indigo-100 dark:border-indigo-950/40 relative overflow-hidden flex flex-col md:flex-row items-center gap-6 shadow-md shadow-indigo-500/5">
+                        <!-- Tiny visual left colored bar -->
+                        <div class="absolute inset-y-0 left-0 w-1.5 bg-indigo-600"></div>
+                        
+                        <!-- QR Code Thumbnail -->
+                        <div class="flex-shrink-0 text-center">
+                            <img class="h-28 w-28 rounded-lg object-contain bg-white border p-1" 
+                                 src="{{ url_for('static', filename=booking.qr_code) }}" 
+                                 alt="QR Pass">
+                        </div>
+                        
+                        <!-- Pass Data -->
+                        <div class="flex-1 space-y-3 min-w-0 w-full">
+                            <div class="flex items-center justify-between gap-2">
+                                <span class="px-2.5 py-0.5 text-xs font-bold bg-indigo-100 text-indigo-800 dark:bg-indigo-950/50 dark:text-indigo-400 rounded-full">Pass #{{ booking.id }}</span>
+                                <span class="px-2.5 py-0.5 text-xs font-semibold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-400 rounded-full flex items-center gap-1.5">
+                                    <span class="h-1.5 w-1.5 rounded-full bg-emerald-500 pulse-green"></span> Active
+                                </span>
+                            </div>
+                            
+                            <div class="grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
+                                <div>
+                                    <span class="text-xs text-slate-400 block">Slot</span>
+                                    <span class="font-bold text-slate-700 dark:text-slate-350">{{ booking.slot_id }}</span>
+                                </div>
+                                <div>
+                                    <span class="text-xs text-slate-400 block">Vehicle</span>
+                                    <span class="font-bold text-slate-700 dark:text-slate-350 truncate block">{{ booking.vehicle_number }}</span>
+                                </div>
+                                <div class="mt-2 col-span-2">
+                                    <span class="text-xs text-slate-400 block">Validity</span>
+                                    <span class="text-xs font-medium text-slate-700 dark:text-slate-350">
+                                        {{ booking.entry_time.strftime('%b %d, %H:%M') }} - {{ booking.exit_time.strftime('%b %d, %H:%M') }}
+                                    </span>
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-center gap-2 pt-2 border-t border-slate-100 dark:border-slate-800/80">
+                                <a href="{{ url_for('booking.view_pass', booking_id=booking.id) }}" class="flex-1 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold text-center transition-all flex items-center justify-center gap-1.5">
+                                    <i class="fas fa-qrcode"></i> View Pass
+                                </a>
+                                <form action="{{ url_for('booking.cancel_booking', booking_id=booking.id) }}" method="POST" class="flex-1 flex" onsubmit="return confirm('Are you sure you want to cancel this booking?')">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <button type="submit" class="w-full py-2 bg-rose-50 dark:bg-rose-950/20 text-rose-600 dark:text-rose-450 hover:bg-rose-100 dark:hover:bg-rose-950/40 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5">
+                                        <i class="fas fa-times"></i> Cancel
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="glass-panel p-8 rounded-2xl border border-dashed border-slate-200 dark:border-slate-800 text-center space-y-3">
+                <div class="h-12 w-12 rounded-full bg-slate-100 dark:bg-slate-900 text-slate-400 mx-auto flex items-center justify-center text-lg">
+                    <i class="fas fa-ticket"></i>
+                </div>
+                <h4 class="font-bold text-slate-700 dark:text-slate-300">No Active Bookings</h4>
+                <p class="text-sm text-slate-500 max-w-sm mx-auto">You do not have any active parking passes at the moment. Book a slot to start parking.</p>
+                <a href="{{ url_for('booking.create_booking') }}" class="inline-flex py-2 px-4 bg-indigo-650 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition-all mt-1">
+                    Book Now
+                </a>
+            </div>
+        {% endif %}
+    </div>
+    
+    <!-- Bottom Grid (History & Analytics) -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        <!-- Booking History Panel -->
+        <div class="glass-panel p-6 rounded-2xl border lg:col-span-2 space-y-4">
+            <div class="flex items-center justify-between">
+                <h3 class="font-bold text-slate-800 dark:text-slate-200 flex items-center gap-2">
+                    <i class="fas fa-history text-indigo-500"></i> Booking History
+                </h3>
+                <span class="text-xs text-slate-400">Showing last 10 entries</span>
+            </div>
+            
+            <div class="overflow-x-auto w-full">
+                <table class="w-full text-left text-sm border-collapse">
+                    <thead>
+                        <tr class="border-b border-slate-100 dark:border-slate-800/80 text-slate-400 text-xs font-bold">
+                            <th class="py-3 px-2">ID</th>
+                            <th class="py-3 px-2">Slot</th>
+                            <th class="py-3 px-2">Vehicle No.</th>
+                            <th class="py-3 px-2">Duration (hr)</th>
+                            <th class="py-3 px-2">Paid</th>
+                            <th class="py-3 px-2">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100 dark:divide-slate-800/60">
+                        {% for booking in booking_history %}
+                        <tr class="text-slate-700 dark:text-slate-300 hover:bg-slate-50/50 dark:hover:bg-slate-900/20 transition-all">
+                            <td class="py-3.5 px-2 font-semibold">#{{ booking.id }}</td>
+                            <td class="py-3.5 px-2 font-bold text-indigo-600 dark:text-indigo-400">{{ booking.slot_id }}</td>
+                            <td class="py-3.5 px-2 font-medium">{{ booking.vehicle_number }}</td>
+                            <td class="py-3.5 px-2">
+                                {{ ((booking.exit_time - booking.entry_time).total_seconds() / 3600)|round(1) }}
+                            </td>
+                            <td class="py-3.5 px-2 font-bold">₹{{ booking.total_amount }}</td>
+                            <td class="py-3.5 px-2">
+                                <span class="px-2.5 py-0.5 text-2xs font-bold rounded-full
+                                    {% if booking.status == 'Active' %}bg-emerald-100 text-emerald-800 dark:bg-emerald-950/30 dark:text-emerald-450
+                                    {% elif booking.status == 'Completed' %}bg-blue-100 text-blue-800 dark:bg-blue-950/30 dark:text-blue-450
+                                    {% else %}bg-slate-100 text-slate-600 dark:bg-slate-800/30 dark:text-slate-400{% endif %}">
+                                    {{ booking.status }}
+                                </span>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="6" class="py-8 text-center text-slate-400">No booking history available.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- Personal Stats and Notifications Panel -->
+        <div class="space-y-6">
+            <!-- Notifications Card -->
+            <div class="glass-panel p-6 rounded-2xl border space-y-4">
+                <h3 class="font-bold text-slate-800 dark:text-slate-200 flex items-center gap-2">
+                    <i class="fas fa-bell text-amber-500"></i> Notifications
+                </h3>
+                
+                <div class="space-y-3.5 max-h-72 overflow-y-auto pr-1">
+                    {% for notification in notifications %}
+                        <div id="notif-{{ notification.id }}" class="p-3.5 rounded-xl border border-slate-100 dark:border-slate-800/80 hover:bg-slate-50 dark:hover:bg-slate-900/30 transition-all text-xs relative group">
+                            <div class="flex items-center justify-between">
+                                <span class="font-semibold text-slate-700 dark:text-slate-350 {% if not notification.is_read %}text-indigo-600 dark:text-indigo-400{% endif %}">{{ notification.title }}</span>
+                                <span class="text-slate-400 text-2xs">{{ notification.created_at.strftime('%m-%d %H:%M') }}</span>
+                            </div>
+                            <p class="text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">{{ notification.message }}</p>
+                            
+                            {% if not notification.is_read %}
+                                <button onclick="markRead({{ notification.id }})" class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity text-indigo-650 hover:text-indigo-850 dark:text-indigo-400 focus:outline-none" title="Mark as read">
+                                    <i class="fas fa-check"></i>
+                                </button>
+                            {% endif %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-6 text-slate-400">No notifications found.</div>
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <!-- Quick Booking Rates Chart Placeholder -->
+            <div class="glass-panel p-6 rounded-2xl border space-y-3">
+                <h4 class="font-bold text-slate-800 dark:text-slate-200">Parking Rates</h4>
+                <div class="space-y-2 text-xs">
+                    <div class="flex items-center justify-between p-2 rounded-lg bg-slate-100/50 dark:bg-slate-800/30">
+                        <span>Cars</span>
+                        <span class="font-bold text-indigo-650 dark:text-indigo-400">₹50 / hr</span>
+                    </div>
+                    <div class="flex items-center justify-between p-2 rounded-lg bg-slate-100/50 dark:bg-slate-800/30">
+                        <span>Bikes</span>
+                        <span class="font-bold text-indigo-650 dark:text-indigo-400">₹20 / hr</span>
+                    </div>
+                    <div class="flex items-center justify-between p-2 rounded-lg bg-slate-100/50 dark:bg-slate-800/30">
+                        <span>Electric Vehicles</span>
+                        <span class="font-bold text-indigo-650 dark:text-indigo-400">₹30 / hr</span>
+                    </div>
+                    <div class="flex items-center justify-between p-2 rounded-lg bg-slate-100/50 dark:bg-slate-800/30">
+                        <span>VIP Parking</span>
+                        <span class="font-bold text-indigo-650 dark:text-indigo-400">₹100 / hr</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+    </div>
+    
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function markRead(id) {
+    const csrfToken = "{{ csrf_token() }}";
+    fetch(`/notifications/read/${id}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrfToken
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            const notifEl = document.getElementById(`notif-${id}`);
+            if (notifEl) {
+                // Dim or hide notification
+                notifEl.classList.add('opacity-60');
+                const checkBtn = notifEl.querySelector('button');
+                if (checkBtn) checkBtn.remove();
+            }
+        }
+    })
+    .catch(err => console.error('Error marking notification as read:', err));
+}
+
+// Intercept Socket.IO updates to update dashboard stats counters dynamically if they are displayed
+document.addEventListener('DOMContentLoaded', () => {
+    if (typeof io !== 'undefined') {
+        const socket = io();
+        socket.on('slot_updated', () => {
+            // Re-fetch totals using a simple request or increment/decrement values
+            // To be precise and robust, let's keep counts synced. 
+            // In a production system, counts could be updated by API calls.
+        });
+    }
+});
+</script>
+{% endblock %}

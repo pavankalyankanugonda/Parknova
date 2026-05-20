@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ParkNova - Smart Parking Management</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            primary: '#3B82F6',
+            secondary: '#10B981',
+            accent: '#F59E0B',
+            dark: '#1F2937'
+          }
+        }
+      }
+    }
+
+    function toggleDarkMode() {
+      document.documentElement.classList.toggle('dark');
+      localStorage.setItem('darkMode', document.documentElement.classList.contains('dark'));
+    }
+
+    // On page load
+    window.onload = () => {
+      if (localStorage.getItem('darkMode') === 'true') {
+        document.documentElement.classList.add('dark');
+      }
+    }
+  </script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
+    body { font-family: 'Outfit', sans-serif; }
+    .glass {
+      background: rgba(255, 255, 255, 0.7);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    .dark .glass {
+      background: rgba(31, 41, 55, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+  </style>
+</head>
+<body class="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-screen transition-colors duration-300">
+  <!-- Navbar -->
+  <nav class="sticky top-0 z-50 glass shadow-sm px-6 py-4 flex justify-between items-center">
+    <div class="flex items-center space-x-3">
+      <div class="bg-blue-600 p-2 rounded-lg text-white">
+        <i class="fas fa-parking text-2xl"></i>
+      </div>
+      <span class="text-2xl font-bold tracking-tight text-blue-600 dark:text-blue-400">Park<span class="text-gray-900 dark:text-white">Nova</span></span>
+    </div>
+
+    <div class="flex items-center space-x-6">
+      <div sec:authorize="isAuthenticated()" class="hidden md:flex items-center space-x-6">
+        <div sec:authorize="hasRole('ADMIN')" class="flex space-x-6">
+          <a th:href="@{/admin/dashboard}" class="hover:text-blue-600 transition-colors flex items-center gap-2">
+            <i class="fas fa-chart-pie text-xs"></i>
+            Dashboard
+          </a>
+          <a th:href="@{/admin/slots}" class="hover:text-blue-600 transition-colors flex items-center gap-2">
+            <i class="fas fa-parking text-xs"></i>
+            Manage Slots
+          </a>
+          <a th:href="@{/admin/bookings}" class="hover:text-blue-600 transition-colors flex items-center gap-2">
+            <i class="fas fa-list-alt text-xs"></i>
+            Bookings
+          </a>
+          <a th:href="@{/admin/users}" class="hover:text-blue-600 transition-colors flex items-center gap-2">
+            <i class="fas fa-users text-xs"></i>
+            Users
+          </a>
+        </div>
+        <div sec:authorize="hasRole('USER')" class="flex space-x-6">
+          <a th:href="@{/user/dashboard}" class="hover:text-blue-600 transition-colors flex items-center gap-2">
+            <i class="fas fa-th-large text-xs"></i>
+            Dashboard
+          </a>
+          <a th:href="@{/user/find}" class="hover:text-blue-600 transition-colors flex items-center gap-2">
+            <i class="fas fa-map-marked-alt text-xs"></i>
+            Find on Map
+          </a>
+          <a th:href="@{/user/history}" class="hover:text-blue-600 transition-colors flex items-center gap-2">
+            <i class="fas fa-history text-xs"></i>
+            History
+          </a>
+          <a href="/app/" class="bg-blue-600/10 text-blue-600 px-3 py-1 rounded-lg hover:bg-blue-600 hover:text-white transition-all flex items-center gap-2 font-bold">
+            <i class="fas fa-rocket text-xs"></i>
+            React Dashboard
+          </a>
+        </div>
+      </div>
+
+      <div class="flex items-center space-x-4 border-l pl-6 border-gray-200 dark:border-gray-700">
+        <button onclick="toggleDarkMode()" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-800 transition-colors">
+          <i class="fas fa-moon dark:hidden"></i>
+          <i class="fas fa-sun hidden dark:block"></i>
+        </button>
+
+        <div sec:authorize="isAuthenticated()" class="flex items-center space-x-3">
+          <span class="hidden md:inline font-medium" sec:authentication="name">User</span>
+          <a th:href="@{/logout}" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm transition-all shadow-md">Logout</a>
+        </div>
+        <div sec:authorize="!isAuthenticated()">
+          <a th:href="@{/login}" class="text-blue-600 hover:underline">Login</a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Page Content -->
+  <main class="container mx-auto px-6 py-12" th:replace="~{ :: content}">
+    <p class="text-center text-gray-500">Loading content...</p>
+  </main>
+
+  <!-- Footer -->
+  <footer class="border-t border-gray-200 dark:border-gray-800 py-8 px-6 mt-auto">
+    <div class="container mx-auto flex flex-col md:flex-row justify-between items-center text-sm text-gray-500">
+      <p>&copy; 2024 ParkNova Smart Parking. All rights reserved.</p>
+      <div class="flex space-x-6 mt-4 md:mt-0">
+        <a href="#" class="hover:text-blue-600">Privacy Policy</a>
+        <a href="#" class="hover:text-blue-600">Terms of Service</a>
+        <a href="#" class="hover:text-blue-600">Contact Us</a>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>

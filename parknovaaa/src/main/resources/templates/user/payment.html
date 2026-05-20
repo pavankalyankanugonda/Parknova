@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: html}">
+<head th:replace="~{layout :: head}">
+    <title>Payment - ParkNova</title>
+</head>
+<body>
+<main th:fragment="content" class="max-w-4xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-5 duration-700">
+    <div class="bg-white dark:bg-gray-800 p-8 rounded-[2.5rem] shadow-2xl border border-gray-100 dark:border-gray-700">
+        <div class="text-center space-y-4 mb-10">
+            <div class="inline-flex items-center justify-center w-20 h-20 rounded-3xl bg-blue-600/10 text-blue-600 mb-4">
+                <i class="fas fa-file-invoice-dollar text-4xl"></i>
+            </div>
+            <h2 class="text-4xl font-black text-gray-900 dark:text-white tracking-tight">Complete <span class="text-blue-600">Payment</span></h2>
+            <p class="text-gray-500 dark:text-gray-400">Scan the QR code below to pay for your parking slot.</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+            <!-- QR Section -->
+            <div class="flex flex-col items-center space-y-6 bg-gray-50 dark:bg-gray-900/50 p-8 rounded-[2rem] border border-gray-200 dark:border-gray-700">
+                <div class="relative group">
+                    <img src="/images/payment_qr.png" alt="Payment QR" class="w-64 h-auto rounded-2xl shadow-lg border-4 border-white dark:border-gray-800 transition-transform group-hover:scale-105 duration-300">
+                    <div class="absolute inset-0 bg-blue-600/10 opacity-0 group-hover:opacity-100 rounded-2xl transition-opacity flex items-center justify-center pointer-events-none">
+                        <i class="fas fa-qrcode text-blue-600 text-3xl"></i>
+                    </div>
+                </div>
+                <div class="text-center">
+                    <p class="font-bold text-gray-800 dark:text-gray-200">Kanugonda Pavan Kalyan</p>
+                    <p class="text-sm text-gray-500">Scan using PhonePe, GPay, or Paytm</p>
+                </div>
+                
+                <!-- UPI Intent Button -->
+                <a href="upi://pay?pa=7382025805@ybl&pn=Kanugonda Pavan Kalyan&mc=0000&mode=02&purpose=00" 
+                   class="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-2xl font-bold flex items-center justify-center gap-3 shadow-lg shadow-blue-500/30 transition-all ripple">
+                    <i class="fas fa-mobile-alt"></i>
+                    Pay using App
+                </a>
+            </div>
+
+            <!-- Confirmation Form -->
+            <div class="space-y-8">
+                <div class="bg-blue-50 dark:bg-blue-900/20 p-6 rounded-3xl border border-blue-100 dark:border-blue-800">
+                    <h4 class="font-bold text-blue-800 dark:text-blue-300 mb-4 flex items-center gap-2">
+                        <i class="fas fa-info-circle"></i> Booking Details
+                    </h4>
+                    <div class="space-y-2 text-sm">
+                        <div class="flex justify-between">
+                            <span class="text-gray-500">Slot Number:</span>
+                            <span class="font-black" th:text="${booking.slot.slotNumber}">A-101</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-500">Base Rate:</span>
+                            <span class="font-black" th:text="'₹' + ${booking.slot.hourlyRate} + '/hr'">₹50/hr</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-500">Reference:</span>
+                            <span class="font-black" th:text="${booking.qrCode}">PKN-XXXX</span>
+                        </div>
+                    </div>
+                </div>
+
+                <form th:action="@{/user/payment/confirm}" method="post" class="space-y-6">
+                    <input type="hidden" name="bookingId" th:value="${booking.id}">
+                    <div class="space-y-2">
+                        <label class="text-sm font-bold text-gray-700 dark:text-gray-300 ml-2">Transaction Reference (ID)</label>
+                        <input type="text" name="transactionId" required placeholder="Enter 12-digit UPI Ref/UTR" 
+                               class="w-full px-6 py-4 rounded-2xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-blue-500 outline-none transition-all">
+                        <p class="text-[10px] text-gray-500 ml-2 italic">Please enter the reference number from your payment app after successful transaction.</p>
+                    </div>
+                    <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-5 rounded-2xl font-black uppercase tracking-widest shadow-xl shadow-emerald-500/30 transition-all hover:-translate-y-1">
+                        Confirm Payment
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</main>
+</body>
+</html>

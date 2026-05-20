@@ -1,0 +1,323 @@
+{% extends 'base.html' %}
+
+{% block title %}Book Parking - ParkNova{% endblock %}
+
+{% block content %}
+<div class="space-y-8 max-w-6xl mx-auto">
+    
+    <div>
+        <h1 class="text-3xl font-extrabold text-slate-800 dark:text-white">Book Parking Space</h1>
+        <p class="text-sm text-slate-500 dark:text-slate-400">Configure your parking dates, select a vehicle, pick an active slot, and confirm your reservation.</p>
+    </div>
+    
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Booking Form Panel -->
+        <div class="glass-panel p-6 md:p-8 rounded-3xl border lg:col-span-2 space-y-6">
+            <h2 class="text-lg font-bold text-slate-800 dark:text-slate-200">1. Reservation Details</h2>
+            
+            <form id="booking-form" action="{{ url_for('booking.create_booking') }}" method="POST" class="space-y-6">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                
+                <!-- Vehicle Details -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                    <div class="space-y-1.5">
+                        <label for="vehicle_id" class="text-sm font-semibold text-slate-700 dark:text-slate-350">Choose Vehicle</label>
+                        <select id="vehicle_id" name="vehicle_id" class="w-full glass-input px-3.5 py-3 rounded-xl text-sm dark:bg-slate-900">
+                            {% for vehicle in vehicles %}
+                            <option value="{{ vehicle.id }}" data-type="{{ vehicle.vehicle_type }}" data-number="{{ vehicle.vehicle_number }}">
+                                {{ vehicle.vehicle_number }} ({{ vehicle.vehicle_type }})
+                            </option>
+                            {% endfor %}
+                            <option value="new" {% if not vehicles %}selected{% endif %}>+ Register New Vehicle</option>
+                        </select>
+                    </div>
+                    
+                    <div id="new-vehicle-inputs" class="space-y-4 col-span-1 sm:col-span-2 hidden">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                            <div class="space-y-1.5">
+                                <label for="vehicle_number" class="text-sm font-semibold text-slate-700 dark:text-slate-350">Vehicle Number</label>
+                                <input type="text" id="vehicle_number" name="vehicle_number" placeholder="KA-03-HA-1234"
+                                       class="w-full glass-input px-3.5 py-3 rounded-xl text-sm uppercase">
+                            </div>
+                            
+                            <div class="space-y-1.5">
+                                <label for="vehicle_type" class="text-sm font-semibold text-slate-700 dark:text-slate-350">Vehicle Type</label>
+                                <select id="vehicle_type" name="vehicle_type" class="w-full glass-input px-3.5 py-3 rounded-xl text-sm dark:bg-slate-900">
+                                    <option value="Car">Car (₹50/hr)</option>
+                                    <option value="Bike">Bike (₹20/hr)</option>
+                                    <option value="Electric">Electric Vehicle (₹30/hr)</option>
+                                    <option value="VIP">VIP Parking (₹100/hr)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Date / Time Selectors -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                    <div class="space-y-1.5">
+                        <label for="entry_time" class="text-sm font-semibold text-slate-700 dark:text-slate-350">Entry Date & Time</label>
+                        <input type="datetime-local" id="entry_time" name="entry_time" required
+                               class="w-full glass-input px-3.5 py-3 rounded-xl text-sm">
+                    </div>
+                    
+                    <div class="space-y-1.5">
+                        <label for="exit_time" class="text-sm font-semibold text-slate-700 dark:text-slate-350">Exit Date & Time</label>
+                        <input type="datetime-local" id="exit_time" name="exit_time" required
+                               class="w-full glass-input px-3.5 py-3 rounded-xl text-sm">
+                    </div>
+                </div>
+                
+                <!-- Hidden Selected Slot Input -->
+                <input type="hidden" id="selected_slot_id" name="slot_id" required>
+                
+                <!-- Slot Selector Display -->
+                <div class="space-y-3 pt-2">
+                    <label class="text-sm font-semibold text-slate-700 dark:text-slate-350 block">2. Select Parking Slot</label>
+                    <div id="slot-selection-preview" class="p-4 rounded-xl border border-dashed border-slate-300 dark:border-slate-800 text-center text-sm text-slate-400 font-medium bg-slate-50/50 dark:bg-slate-900/10">
+                        Please choose an available slot from the grid on the right.
+                    </div>
+                </div>
+                
+                <!-- Form Submission -->
+                <button type="submit" id="submit-btn" disabled
+                        class="w-full py-4 bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-300 disabled:text-slate-500 disabled:cursor-not-allowed dark:disabled:bg-slate-800 dark:disabled:text-slate-500 text-white rounded-xl font-bold shadow-lg transition-all flex items-center justify-center gap-2">
+                    <i class="fas fa-lock-open"></i> Confirm & Book Parking Pass
+                </button>
+            </form>
+        </div>
+        
+        <!-- Live Parking Grid Selector -->
+        <div class="space-y-4">
+            <div class="flex items-center justify-between">
+                <h2 class="text-lg font-bold text-slate-800 dark:text-slate-200">Parking Map Grid</h2>
+                <div class="text-xs font-semibold px-2 py-1 rounded bg-indigo-50 dark:bg-indigo-950 text-indigo-650 dark:text-indigo-400">Live Grid</div>
+            </div>
+            
+            <div class="glass-panel p-5 rounded-3xl border space-y-4">
+                <div class="flex items-center gap-2 flex-wrap text-2xs font-semibold pb-3 border-b border-slate-100 dark:border-slate-850">
+                    <span class="inline-flex items-center gap-1"><span class="h-2 w-2 rounded-full bg-green-500"></span> Available</span>
+                    <span class="inline-flex items-center gap-1"><span class="h-2 w-2 rounded-full bg-red-500"></span> Occupied</span>
+                    <span class="inline-flex items-center gap-1"><span class="h-2 w-2 rounded-full bg-amber-500"></span> Reserved</span>
+                    <span class="inline-flex items-center gap-1"><span class="h-2 w-2 rounded-full bg-gray-400"></span> Inactive</span>
+                </div>
+                
+                <!-- Slots Container -->
+                <div class="grid grid-cols-3 gap-2.5 max-h-96 overflow-y-auto pr-1" id="booking-slots-grid">
+                    {% for slot in slots %}
+                    <button type="button" id="slot-btn-{{ slot.id }}" onclick="selectSlot('{{ slot.id }}', '{{ slot.type }}', '{{ slot.floor }}')"
+                            class="py-3 px-2 rounded-xl text-center border font-bold text-xs transition-all hover:scale-102
+                            {% if slot.status == 'Available' %}bg-green-50 border-green-200 text-green-700 dark:bg-green-950/20 dark:border-green-900/40 dark:text-green-400 hover:bg-green-100
+                            {% elif slot.status == 'Occupied' %}bg-red-50 border-red-200 text-red-700 dark:bg-red-950/20 dark:border-red-900/40 dark:text-red-400 cursor-not-allowed opacity-60
+                            {% elif slot.status == 'Reserved' %}bg-amber-50 border-amber-200 text-amber-700 dark:bg-amber-950/20 dark:border-amber-900/40 dark:text-amber-400 cursor-not-allowed opacity-60
+                            {% else %}bg-gray-50 border-gray-200 text-gray-550 dark:bg-gray-900/20 dark:border-gray-800 dark:text-gray-400 cursor-not-allowed opacity-50{% endif %}"
+                            {% if slot.status != 'Available' %}disabled{% endif %}>
+                        <div>{{ slot.id }}</div>
+                        <div class="text-3xs font-medium text-slate-400 dark:text-slate-500 mt-0.5">{{ slot.type }} • F{{ slot.floor }}</div>
+                    </button>
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <!-- Live Fee Preview Calculation Card -->
+            <div id="fee-preview-card" class="glass-panel p-5 rounded-3xl border border-indigo-100 dark:border-indigo-950/40 bg-indigo-50/10 dark:bg-indigo-950/10 space-y-3.5 hidden animate-fade-in">
+                <h3 class="font-bold text-sm text-slate-800 dark:text-slate-200 border-b border-slate-100 dark:border-slate-850 pb-2">
+                    <i class="fas fa-receipt text-indigo-500"></i> Estimated Receipt Preview
+                </h3>
+                
+                <div class="space-y-2 text-xs">
+                    <div class="flex items-center justify-between text-slate-500">
+                        <span>Duration</span>
+                        <span class="font-bold text-slate-800 dark:text-slate-300" id="preview-duration">0 hr</span>
+                    </div>
+                    <div class="flex items-center justify-between text-slate-500">
+                        <span>Hourly Rate</span>
+                        <span class="font-bold text-slate-800 dark:text-slate-300" id="preview-rate">₹0 / hr</span>
+                    </div>
+                    <div class="flex items-center justify-between text-slate-500">
+                        <span>Base Amount</span>
+                        <span class="font-bold text-slate-800 dark:text-slate-300" id="preview-base">₹0.00</span>
+                    </div>
+                    <div class="flex items-center justify-between text-slate-500">
+                        <span>GST Tax (18%)</span>
+                        <span class="font-bold text-slate-800 dark:text-slate-300" id="preview-tax">₹0.00</span>
+                    </div>
+                    <div class="flex items-center justify-between border-t border-slate-200 dark:border-slate-800 pt-2.5 text-sm">
+                        <span class="font-bold text-slate-800 dark:text-slate-200">Grand Total</span>
+                        <span class="font-extrabold text-indigo-600 dark:text-indigo-400" id="preview-total">₹0.00</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Select slot and configure fields
+function selectSlot(slotId, slotType, floor) {
+    // Save selection to hidden input
+    document.getElementById('selected_slot_id').value = slotId;
+    
+    // Highlight or modify select display block
+    const previewEl = document.getElementById('slot-selection-preview');
+    previewEl.className = "p-4 rounded-xl border border-indigo-200 dark:border-indigo-900 bg-indigo-50/30 dark:bg-indigo-950/20 text-indigo-650 dark:text-indigo-400 font-bold text-center text-sm flex items-center justify-between";
+    previewEl.innerHTML = `
+        <span><i class="fas fa-parking mr-2"></i> Selected Slot: <strong>${slotId}</strong> (Floor ${floor})</span>
+        <span class="text-xs px-2.5 py-0.5 bg-indigo-100 dark:bg-indigo-900/50 rounded-full font-semibold uppercase">${slotType}</span>
+    `;
+    
+    // Remove active styles from other slots grid buttons
+    const buttons = document.querySelectorAll('#booking-slots-grid button');
+    buttons.forEach(btn => {
+        if (!btn.disabled) {
+            btn.classList.remove('ring-4', 'ring-indigo-500/30', 'border-indigo-500');
+        }
+    });
+    
+    // Add border ring to active slot button
+    const currentBtn = document.getElementById(`slot-btn-${slotId}`);
+    if (currentBtn) {
+        currentBtn.classList.add('ring-4', 'ring-indigo-500/30', 'border-indigo-500');
+    }
+    
+    // If "New Vehicle" selected, set vehicle type dropdown value automatically to match slot type
+    const vehicleSelect = document.getElementById('vehicle_id');
+    if (vehicleSelect.value === 'new') {
+        const vehicleTypeSelect = document.getElementById('vehicle_type');
+        // Match slot type if possible
+        if (slotType) {
+            for (let option of vehicleTypeSelect.options) {
+                if (option.value.toLowerCase() === slotType.toLowerCase() || (slotType === 'Electric' && option.value === 'Electric')) {
+                    vehicleTypeSelect.value = option.value;
+                    break;
+                }
+            }
+        }
+    }
+    
+    checkSubmitEligibility();
+    triggerFeePreview();
+}
+
+// Check if form fields are valid to enable booking button
+function checkSubmitEligibility() {
+    const slotId = document.getElementById('selected_slot_id').value;
+    const entryTime = document.getElementById('entry_time').value;
+    const exitTime = document.getElementById('exit_time').value;
+    const submitBtn = document.getElementById('submit-btn');
+    
+    if (slotId && entryTime && exitTime) {
+        submitBtn.disabled = false;
+    } else {
+        submitBtn.disabled = true;
+    }
+}
+
+// Preview fee dynamically via API
+function triggerFeePreview() {
+    const entryTime = document.getElementById('entry_time').value;
+    const exitTime = document.getElementById('exit_time').value;
+    const vehicleSelect = document.getElementById('vehicle_id');
+    
+    let vehicleType = '';
+    if (vehicleSelect.value === 'new') {
+        vehicleType = document.getElementById('vehicle_type').value;
+    } else {
+        const selectedOption = vehicleSelect.options[vehicleSelect.selectedIndex];
+        if (selectedOption) {
+            vehicleType = selectedOption.getAttribute('data-type');
+        }
+    }
+    
+    if (!vehicleType || !entryTime || !exitTime) return;
+    
+    const csrfToken = "{{ csrf_token() }}";
+    
+    fetch('/booking/calculate-fee-preview', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrfToken
+        },
+        body: JSON.stringify({
+            vehicle_type: vehicleType,
+            entry_time: entryTime,
+            exit_time: exitTime
+        })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.error) {
+            document.getElementById('fee-preview-card').classList.add('hidden');
+            return;
+        }
+        
+        document.getElementById('preview-duration').textContent = `${data.duration_hours} hr`;
+        document.getElementById('preview-rate').textContent = `₹${data.hourly_rate} / hr`;
+        document.getElementById('preview-base').textContent = `₹${data.base_amount.toFixed(2)}`;
+        document.getElementById('preview-tax').textContent = `₹${data.tax_amount.toFixed(2)}`;
+        document.getElementById('preview-total').textContent = `₹${data.total_amount.toFixed(2)}`;
+        
+        document.getElementById('fee-preview-card').classList.remove('hidden');
+    })
+    .catch(err => {
+        console.error('Error previewing fee:', err);
+        document.getElementById('fee-preview-card').classList.add('hidden');
+    });
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const vehicleSelect = document.getElementById('vehicle_id');
+    const newVehicleInputs = document.getElementById('new-vehicle-inputs');
+    const entryInput = document.getElementById('entry_time');
+    const exitInput = document.getElementById('exit_time');
+    const vehicleTypeSelect = document.getElementById('vehicle_type');
+    
+    // Setup initial dates (default: start now, end in 2 hours)
+    const now = new Date();
+    const inTwoHours = new Date(now.getTime() + (2 * 60 * 60 * 1000));
+    
+    const formatDateTimeLocal = (date) => {
+        const pad = (num) => String(num).padStart(2, '0');
+        const year = date.getFullYear();
+        const month = pad(date.getMonth() + 1);
+        const day = pad(date.getDate());
+        const hours = pad(date.getHours());
+        const minutes = pad(date.getMinutes());
+        return `${year}-${month}-${day}T${hours}:${minutes}`;
+    };
+    
+    entryInput.value = formatDateTimeLocal(now);
+    exitInput.value = formatDateTimeLocal(inTwoHours);
+    
+    // Initial triggers
+    const toggleInputs = () => {
+        if (vehicleSelect.value === 'new') {
+            newVehicleInputs.classList.remove('hidden');
+            document.getElementById('vehicle_number').required = true;
+        } else {
+            newVehicleInputs.classList.add('hidden');
+            document.getElementById('vehicle_number').required = false;
+        }
+        triggerFeePreview();
+    };
+    
+    vehicleSelect.addEventListener('change', toggleInputs);
+    vehicleTypeSelect.addEventListener('change', triggerFeePreview);
+    entryInput.addEventListener('change', () => {
+        checkSubmitEligibility();
+        triggerFeePreview();
+    });
+    exitInput.addEventListener('change', () => {
+        checkSubmitEligibility();
+        triggerFeePreview();
+    });
+    
+    toggleInputs();
+    checkSubmitEligibility();
+});
+</script>
+{% endblock %}

@@ -1,0 +1,13 @@
+{
+  "name": "parknova",
+  "version": "1.0.0",
+  "description": "ParkNova is a modern, full-stack parking management solution built with **Java (Spring Boot 3)**, **MySQL**, and **Tailwind CSS**. It provides a premium experience for both users and administrators to manage parking slots in real-time.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs"
+}

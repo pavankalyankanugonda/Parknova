@@ -1,0 +1,31 @@
+# Ignore nested Git repository and local workspace files
+Parknova/
+
+# Java build artifacts
+parknovaaa/target/
+parknovaaa/*.log
+parknovaaa/*.db
+parknovaaa/.idea/
+parknovaaa/.vscode/
+
+# Python artifacts
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.db
+instance/
+venv/
+.env
+
+# Node.js
+node_modules/
+parknovaaa/frontend/node_modules/
+parknovaaa/package-lock.json
+parknovaaa/frontend/package-lock.json
+
+# IDE files
+*.swp
+*.swo
+.vscode/
+.DS_Store

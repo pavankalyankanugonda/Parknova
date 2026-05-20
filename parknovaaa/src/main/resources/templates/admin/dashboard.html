@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: html}">
+<head th:replace="~{layout :: head}"></head>
+<body>
+  <main th:fragment="content" class="space-y-12 animate-in fade-in slide-in-from-bottom-5 duration-700">
+    <!-- Admin Hero Section -->
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center bg-white dark:bg-gray-800 p-10 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700">
+      <div class="space-y-2">
+        <h2 class="text-4xl font-black text-gray-900 dark:text-white tracking-tight">System <span class="text-blue-600">Overview</span></h2>
+        <p class="text-gray-500 dark:text-gray-400 max-w-xl">Real-time analytics and management control center for ParkNova networks.</p>
+      </div>
+      <div class="mt-8 md:mt-0 flex space-x-4">
+        <div class="bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 p-5 rounded-3xl flex items-center space-x-4 border border-emerald-200 dark:border-emerald-800 shadow-sm">
+           <i class="fas fa-signal text-3xl opacity-50"></i>
+           <div class="text-left">
+             <p class="text-xs font-bold uppercase tracking-widest opacity-60">System Status</p>
+             <p class="text-xl font-bold">Operational</p>
+           </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Analytics Stats Grid -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+      <!-- Total Slots Card -->
+      <div class="glass p-8 rounded-3xl group hover:shadow-2xl transition-all duration-500 border border-white/20 dark:border-white/10 hover:border-blue-500/30">
+        <div class="bg-blue-600/10 p-5 rounded-2xl w-fit text-blue-600 mb-8 group-hover:scale-110 transition-transform duration-300 shadow-md">
+           <i class="fas fa-parking text-3xl"></i>
+        </div>
+        <p class="text-xs font-bold uppercase tracking-widest text-gray-500 mb-2">Total Capacity</p>
+        <h3 class="text-5xl font-black text-gray-900 dark:text-white" th:text="${totalSlots}">0</h3>
+        <p class="text-sm text-gray-500 mt-4 flex items-center space-x-2">
+           <span class="text-emerald-500 font-bold"><i class="fas fa-arrow-up"></i> 100%</span>
+           <span>Available Base</span>
+        </p>
+      </div>
+
+      <!-- Occupied Slots Card -->
+      <div class="glass p-8 rounded-3xl group hover:shadow-2xl transition-all duration-500 border border-white/20 dark:border-white/10 hover:border-blue-500/30">
+        <div class="bg-rose-600/10 p-5 rounded-2xl w-fit text-rose-600 mb-8 group-hover:scale-110 transition-transform duration-300 shadow-md">
+           <i class="fas fa-car text-3xl"></i>
+        </div>
+        <p class="text-xs font-bold uppercase tracking-widest text-gray-500 mb-2">Active Parking</p>
+        <h3 class="text-5xl font-black text-gray-900 dark:text-white" th:text="${occupiedSlots}">0</h3>
+        <div class="mt-4 w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+           <div class="h-full bg-rose-500 rounded-full" th:style="'width: ' + (${totalSlots} > 0 ? (${occupiedSlots} * 100 / ${totalSlots}) : 0) + '%'"></div>
+        </div>
+      </div>
+
+      <!-- Available Slots Card -->
+      <div class="glass p-8 rounded-3xl group hover:shadow-2xl transition-all duration-500 border border-white/20 dark:border-white/10 hover:border-blue-500/30">
+        <div class="bg-emerald-600/10 p-5 rounded-2xl w-fit text-emerald-600 mb-8 group-hover:scale-110 transition-transform duration-300 shadow-md">
+           <i class="fas fa-check-double text-3xl"></i>
+        </div>
+        <p class="text-xs font-bold uppercase tracking-widest text-gray-500 mb-2">Open Spots</p>
+        <h3 class="text-5xl font-black text-gray-900 dark:text-white" th:text="${availableSlots}">0</h3>
+        <div class="mt-4 w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden text-right">
+           <div class="h-full bg-emerald-500 rounded-full" th:style="'width: ' + (${totalSlots} > 0 ? (${availableSlots} * 100 / ${totalSlots}) : 0) + '%'"></div>
+        </div>
+      </div>
+
+      <!-- Total Revenue Card -->
+      <div class="glass p-8 rounded-3xl group hover:shadow-2xl transition-all duration-500 border border-white/20 dark:border-white/10 hover:border-blue-500/30">
+        <div class="bg-amber-600/10 p-5 rounded-2xl w-fit text-amber-600 mb-8 group-hover:scale-110 transition-transform duration-300 shadow-md">
+           <i class="fas fa-wallet text-3xl"></i>
+        </div>
+        <p class="text-xs font-bold uppercase tracking-widest text-gray-500 mb-2">Total Revenue</p>
+        <h3 class="text-5xl font-black text-gray-900 dark:text-white" th:text="'₹' + ${totalRevenue}">₹0</h3>
+        <p class="text-sm text-gray-500 mt-4 flex items-center space-x-2">
+           <span class="text-blue-500 font-bold"><i class="fas fa-chart-line"></i> +12%</span>
+           <span>from last month</span>
+        </p>
+      </div>
+    </div>
+
+    <!-- Recent Bookings Table -->
+    <div class="space-y-8">
+      <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
+        <div class="space-y-1 mb-4 md:mb-0">
+          <h3 class="text-2xl font-black tracking-tight text-gray-900 dark:text-white flex items-center space-x-3">
+             <i class="fas fa-table-list text-blue-600"></i>
+             <span>Live Booking Feed</span>
+          </h3>
+          <p class="text-sm text-gray-500 font-medium">Monitoring the latest activity across all managed nodes.</p>
+        </div>
+        <a th:href="@{/admin/bookings}" class="bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700 hover:bg-gray-200 text-gray-700 dark:text-gray-300 px-6 py-3 rounded-2xl text-sm font-bold shadow-sm transition-all border border-gray-200 dark:border-gray-700">View Full Archive</a>
+      </div>
+
+      <div class="overflow-x-auto rounded-[2rem] border-2 border-white/20 dark:border-white/10 shadow-xl bg-white/50 dark:bg-gray-900/50 backdrop-blur-xl">
+        <table class="w-full text-left">
+          <thead>
+            <tr class="bg-gray-100/50 dark:bg-gray-800/50 text-gray-500 dark:text-gray-400 uppercase text-[10px] font-black tracking-[0.2em]">
+              <th class="px-8 py-6">Reference</th>
+              <th class="px-8 py-6">Customer</th>
+              <th class="px-8 py-6">Slot</th>
+              <th class="px-8 py-6">Entry Time</th>
+              <th class="px-8 py-6">Status</th>
+              <th class="px-8 py-6">Revenue</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
+            <tr th:each="booking : ${recentBookings}" class="hover:bg-blue-50/30 dark:hover:bg-blue-900/10 transition-all group">
+              <td class="px-8 py-6 flex flex-col">
+                <span class="text-sm font-black text-gray-900 dark:text-white" th:text="${booking.qrCode}">PKN-XXXXX</span>
+                <span class="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1">Unique Token</span>
+              </td>
+              <td class="px-8 py-6">
+                 <div class="flex items-center space-x-3">
+                    <div class="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/50 flex items-center justify-center text-blue-600 text-xs font-bold" th:text="${#strings.substring(booking.user.username,0,1).toUpperCase()}">U</div>
+                    <span class="text-sm font-bold text-gray-700 dark:text-gray-300" th:text="${booking.user.fullName}">John Doe</span>
+                 </div>
+              </td>
+              <td class="px-8 py-6">
+                <span class="px-4 py-2 bg-gray-100 dark:bg-gray-800 rounded-xl text-xs font-bold text-gray-500" th:text="${booking.slot.slotNumber}">A-101</span>
+              </td>
+              <td class="px-8 py-6 text-sm text-gray-600 dark:text-gray-400 font-medium" th:text="${#temporals.format(booking.startTime, 'MMM dd, HH:mm')}">Oct 24, 14:30</td>
+              <td class="px-8 py-6">
+                <span th:if="${booking.active}" class="px-4 py-2 bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400 rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center space-x-2 w-fit">
+                   <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-ping"></span>
+                   <span>In Session</span>
+                </span>
+                <span th:if="${!booking.active}" class="px-4 py-2 bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400 rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center space-x-2 w-fit">
+                   <span>Completed</span>
+                </span>
+              </td>
+              <td class="px-8 py-6 text-sm font-black text-blue-600 dark:text-blue-400" th:text="${booking.totalFee != null ? '₹' + booking.totalFee : '---'}">₹0</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+</body>
+</html>

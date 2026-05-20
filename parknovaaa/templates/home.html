@@ -1,0 +1,116 @@
+{% extends 'base.html' %}
+
+{% block title %}ParkNova - Modern Parking Management Solution{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto py-8">
+    
+    <!-- Hero Section -->
+    <div class="relative overflow-hidden rounded-3xl glass-panel p-8 md:p-16 mb-12 flex flex-col md:flex-row items-center gap-10">
+        <!-- Hero Text -->
+        <div class="flex-1 space-y-6 animate-fade-in">
+            <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 font-semibold text-xs tracking-wider uppercase">
+                <i class="fas fa-sparkles"></i> The Future of Parking is Here
+            </div>
+            
+            <h1 class="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight text-slate-800 dark:text-white leading-tight">
+                Smart Parking <br>
+                <span class="bg-gradient-to-r from-indigo-650 to-violet-600 bg-clip-text text-transparent dark:from-indigo-400 dark:to-violet-400">Redefined.</span>
+            </h1>
+            
+            <p class="text-lg text-slate-600 dark:text-slate-350 max-w-lg leading-relaxed">
+                Find slot availability in real time, reserve spaces in seconds, generate unique QR-based passes, and manage everything from a unified dashboard.
+            </p>
+            
+            <div class="flex flex-wrap items-center gap-4 pt-2">
+                {% if current_user.is_authenticated %}
+                    {% if current_user.is_admin() %}
+                        <a href="{{ url_for('admin.dashboard') }}" class="px-6 py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold shadow-lg shadow-indigo-600/25 transition-all flex items-center gap-2">
+                            Go to Admin Console <i class="fas fa-arrow-right"></i>
+                        </a>
+                    {% else %}
+                        <a href="{{ url_for('booking.create_booking') }}" class="px-6 py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold shadow-lg shadow-indigo-600/25 transition-all flex items-center gap-2">
+                            Book Parking Slot Now <i class="fas fa-arrow-right"></i>
+                        </a>
+                    {% endif %}
+                {% else %}
+                    <a href="{{ url_for('auth.register') }}" class="px-6 py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold shadow-lg shadow-indigo-600/25 transition-all">
+                        Get Started
+                    </a>
+                    <a href="{{ url_for('auth.login') }}" class="px-6 py-3.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-850 rounded-xl font-bold transition-all">
+                        Log In
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Hero Graphics -->
+        <div class="flex-1 w-full max-w-md relative flex items-center justify-center">
+            <!-- Glassy glowing blob backdrop -->
+            <div class="absolute -inset-4 bg-indigo-500/25 rounded-full blur-3xl opacity-30 dark:opacity-40 animate-pulse"></div>
+            
+            <div class="relative glass-panel rounded-2xl p-6 border w-full max-w-sm flex flex-col gap-5 shadow-2xl">
+                <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+                    <span class="font-bold text-slate-700 dark:text-slate-350 flex items-center gap-2">
+                        <i class="fas fa-parking text-indigo-500"></i> Parking Occupancy
+                    </span>
+                    <span class="h-2.5 w-2.5 rounded-full bg-green-500 pulse-green"></span>
+                </div>
+                
+                <!-- Mock Slots -->
+                <div class="grid grid-cols-4 gap-3">
+                    <div class="h-10 rounded-lg bg-green-500 text-white flex items-center justify-center font-bold text-xs shadow-md shadow-green-500/20">A1</div>
+                    <div class="h-10 rounded-lg bg-red-500 text-white flex items-center justify-center font-bold text-xs shadow-md shadow-red-500/20">A2</div>
+                    <div class="h-10 rounded-lg bg-green-500 text-white flex items-center justify-center font-bold text-xs shadow-md shadow-green-500/20">A3</div>
+                    <div class="h-10 rounded-lg bg-amber-500 text-white flex items-center justify-center font-bold text-xs shadow-md shadow-amber-500/20">A4</div>
+                    <div class="h-10 rounded-lg bg-red-500 text-white flex items-center justify-center font-bold text-xs shadow-md shadow-red-500/20">B1</div>
+                    <div class="h-10 rounded-lg bg-green-500 text-white flex items-center justify-center font-bold text-xs shadow-md shadow-green-500/20">B2</div>
+                    <div class="h-10 rounded-lg bg-green-500 text-white flex items-center justify-center font-bold text-xs shadow-md shadow-green-500/20">B3</div>
+                    <div class="h-10 rounded-lg bg-gray-400 text-white flex items-center justify-center font-bold text-xs shadow-md shadow-gray-400/20">B4</div>
+                </div>
+                
+                <div class="text-xs text-slate-400 flex items-center justify-between mt-2">
+                    <div class="flex items-center gap-1"><span class="h-2 w-2 rounded-full bg-green-500"></span> Available</div>
+                    <div class="flex items-center gap-1"><span class="h-2 w-2 rounded-full bg-red-500"></span> Occupied</div>
+                    <div class="flex items-center gap-1"><span class="h-2 w-2 rounded-full bg-amber-500"></span> Reserved</div>
+                    <div class="flex items-center gap-1"><span class="h-2 w-2 rounded-full bg-gray-400"></span> Inactive</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Features Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+        <div class="glass-panel p-6 rounded-2xl border flex flex-col gap-4">
+            <div class="h-12 w-12 bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 rounded-xl flex items-center justify-center text-xl shadow-inner">
+                <i class="fas fa-clock"></i>
+            </div>
+            <h3 class="text-lg font-bold">Real-Time Sync</h3>
+            <p class="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
+                Our slot matrix updates instantly via Socket.IO, displaying slot availability changes immediately across all devices.
+            </p>
+        </div>
+        
+        <div class="glass-panel p-6 rounded-2xl border flex flex-col gap-4">
+            <div class="h-12 w-12 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-xl flex items-center justify-center text-xl shadow-inner">
+                <i class="fas fa-qrcode"></i>
+            </div>
+            <h3 class="text-lg font-bold">QR Entry Pass</h3>
+            <p class="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
+                Generate secure QR-based parking passes automatically upon reservation. Download, print, or scan them directly.
+            </p>
+        </div>
+        
+        <div class="glass-panel p-6 rounded-2xl border flex flex-col gap-4">
+            <div class="h-12 w-12 bg-violet-500/10 text-violet-600 dark:text-violet-400 rounded-xl flex items-center justify-center text-xl shadow-inner">
+                <i class="fas fa-calculator"></i>
+            </div>
+            <h3 class="text-lg font-bold">Smart Fee Matrix</h3>
+            <p class="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
+                Automated rate calculation tailored to vehicle categories (Car, Bike, EV, VIP). Preview rates before confirming bookings.
+            </p>
+        </div>
+    </div>
+    
+</div>
+{% endblock %}

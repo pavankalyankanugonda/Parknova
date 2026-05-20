@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: html}">
+<head th:replace="~{layout :: head}"></head>
+<body>
+  <main th:fragment="content" class="space-y-6">
+    <!-- Add Leaflet CSS and Styles inside the fragment so they aren't replaced by layout :: head -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        #map { 
+            height: 600px; 
+            border-radius: 1.5rem; 
+            width: 100%;
+            z-index: 10;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+        .leaflet-container { font-family: 'Outfit', sans-serif; }
+    </style>
+    <div class="flex flex-col md:flex-row justify-between items-center gap-4 bg-white dark:bg-gray-800 p-6 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700">
+      <div>
+        <h2 class="text-3xl font-bold text-gray-900 dark:text-white">Find Parking</h2>
+        <p class="text-gray-500 dark:text-gray-400">Search for locations or browse the map for available slots.</p>
+      </div>
+      <div class="flex items-center gap-3 w-full md:w-auto">
+        <input type="text" id="location-search" placeholder="Search location..." 
+               class="bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl px-6 py-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none w-full md:w-80">
+        <button onclick="searchLocation()" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-2xl font-bold text-sm shadow-lg shadow-blue-500/30">
+          <i class="fas fa-search"></i>
+        </button>
+      </div>
+    </div>
+
+    <div class="relative">
+      <div id="map" class="z-0"></div>
+      
+      <!-- List Sidebar (Mobile/Floating) -->
+      <div class="absolute top-4 left-4 z-[1000] hidden lg:block w-80">
+        <div class="bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl p-6 rounded-3xl shadow-2xl border border-white/20">
+          <h3 class="font-bold mb-4 flex items-center gap-2">
+            <i class="fas fa-list-ul text-blue-600"></i>
+            Nearby Slots
+          </h3>
+          <div class="space-y-3 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+            <div th:each="slot : ${slots}" 
+                 th:if="${slot.status.name() == 'AVAILABLE'}"
+                 class="p-4 bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-700 hover:border-blue-500 transition-all cursor-pointer group"
+                 th:onclick="'focusOnSlot(' + ${slot.latitude} + ',' + ${slot.longitude} + ')'">
+              <div class="flex justify-between items-start">
+                <span class="font-black text-lg" th:text="${slot.slotNumber}">A-101</span>
+                <span class="text-blue-600 font-bold text-xs" th:text="'₹' + ${slot.hourlyRate} + '/hr'">₹50</span>
+              </div>
+              <p class="text-xs text-gray-500 mt-1" th:text="${slot.location}">Floor 1</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        var slots = /*[[${slots}]]*/ [];
+        var map = L.map('map').setView([17.4504, 78.3811], 15);
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+
+        var markers = {};
+
+        slots.forEach(function(slot) {
+            if (slot.latitude && slot.longitude) {
+                var color = slot.status === 'AVAILABLE' ? '#10B981' : '#EF4444';
+                var statusText = slot.status === 'AVAILABLE' ? 'Available' : 'Booked';
+                
+                var marker = L.circleMarker([slot.latitude, slot.longitude], {
+                    radius: 10,
+                    fillColor: color,
+                    color: '#fff',
+                    weight: 2,
+                    opacity: 1,
+                    fillOpacity: 0.8
+                }).addTo(map);
+
+                var popupContent = `
+                    <div class="p-2 min-w-[150px]">
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="font-bold text-lg">Slot ${slot.slotNumber}</span>
+                            <span class="text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-gray-100" style="color: ${color}">${statusText}</span>
+                        </div>
+                        <p class="text-xs text-gray-500 mb-3">${slot.location} • ₹${slot.hourlyRate}/hr</p>
+                        ${slot.status === 'AVAILABLE' ? 
+                            `<form action="/user/book/${slot.id}" method="post">
+                                <button type="submit" class="w-full bg-blue-600 text-white text-[10px] font-bold py-2 rounded-lg mt-2 cursor-pointer shadow-blue-500/20 shadow-md">Book Spot Now</button>
+                             </form>` : ''}
+                    </div>
+                `;
+
+                marker.bindPopup(popupContent);
+                markers[slot.id] = marker;
+            }
+        });
+
+        function focusOnSlot(lat, lng) {
+            map.flyTo([lat, lng], 18);
+        }
+
+        async function searchLocation() {
+            var query = document.getElementById('location-search').value;
+            if (!query) return;
+            
+            try {
+                const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${query}`);
+                const data = await response.json();
+                if (data.length > 0) {
+                    map.flyTo([data[0].lat, data[0].lon], 15);
+                }
+            } catch (error) {
+                console.error('Search error:', error);
+            }
+        }
+        /*]]>*/
+    </script>
+  </main>
+</body>
+</html>

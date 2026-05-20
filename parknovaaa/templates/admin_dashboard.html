@@ -1,0 +1,483 @@
+{% extends 'base.html' %}
+
+{% block title %}Admin Dashboard - ParkNova{% endblock %}
+
+{% block content %}
+<div class="space-y-8 max-w-6xl mx-auto">
+    
+    <!-- Title & Navigation tabs header -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div>
+            <h1 class="text-3xl font-extrabold text-slate-800 dark:text-white">Admin Dashboard</h1>
+            <p class="text-sm text-slate-500 dark:text-slate-400">System overview, slot configurations, user database, and PDF reporting.</p>
+        </div>
+        
+        <!-- Tab controllers -->
+        <div class="flex items-center gap-1.5 p-1 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800/80">
+            <button onclick="switchTab('analytics')" id="tab-btn-analytics" class="px-4 py-2 text-xs font-bold rounded-lg transition-all focus:outline-none bg-white dark:bg-slate-800 shadow text-slate-800 dark:text-white">
+                <i class="fas fa-chart-line mr-1"></i> Analytics
+            </button>
+            <button onclick="switchTab('slots')" id="tab-btn-slots" class="px-4 py-2 text-xs font-bold rounded-lg transition-all focus:outline-none text-slate-500 hover:text-slate-700 dark:hover:text-slate-350">
+                <i class="fas fa-th-large mr-1"></i> Slots
+            </button>
+            <button onclick="switchTab('users')" id="tab-btn-users" class="px-4 py-2 text-xs font-bold rounded-lg transition-all focus:outline-none text-slate-500 hover:text-slate-700 dark:hover:text-slate-350">
+                <i class="fas fa-users mr-1"></i> Users
+            </button>
+            <button onclick="switchTab('bookings')" id="tab-btn-bookings" class="px-4 py-2 text-xs font-bold rounded-lg transition-all focus:outline-none text-slate-500 hover:text-slate-700 dark:hover:text-slate-350">
+                <i class="fas fa-book mr-1"></i> Bookings
+            </button>
+        </div>
+    </div>
+    
+    <!-- Metrics Cards Grid -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-5">
+        <!-- Total Users -->
+        <div class="glass-panel p-4.5 rounded-2xl border">
+            <p class="text-3xs font-bold text-slate-400 uppercase tracking-widest">Total Users</p>
+            <div class="flex items-baseline gap-2 mt-1">
+                <h3 class="text-2xl font-bold">{{ total_users }}</h3>
+                <span class="text-4xs text-slate-400 font-semibold">Registered</span>
+            </div>
+        </div>
+        <!-- Total Bookings -->
+        <div class="glass-panel p-4.5 rounded-2xl border">
+            <p class="text-3xs font-bold text-slate-400 uppercase tracking-widest">Total Bookings</p>
+            <div class="flex items-baseline gap-2 mt-1">
+                <h3 class="text-2xl font-bold">{{ total_bookings }}</h3>
+                <span class="text-4xs text-slate-400 font-semibold">All Time</span>
+            </div>
+        </div>
+        <!-- Revenue Generated -->
+        <div class="glass-panel p-4.5 rounded-2xl border border-indigo-100 dark:border-indigo-950/40 bg-indigo-50/10 dark:bg-indigo-950/10">
+            <p class="text-3xs font-bold text-indigo-650 dark:text-indigo-400 uppercase tracking-widest">Revenue</p>
+            <div class="flex items-baseline gap-1 mt-1">
+                <h3 class="text-2xl font-extrabold text-indigo-600 dark:text-indigo-400">₹{{ "%.2f"|format(revenue) }}</h3>
+            </div>
+        </div>
+        <!-- Available Slots -->
+        <div class="glass-panel p-4.5 rounded-2xl border">
+            <p class="text-3xs font-bold text-slate-400 uppercase tracking-widest">Available Slots</p>
+            <div class="flex items-baseline gap-2 mt-1">
+                <h3 class="text-2xl font-bold text-green-600 dark:text-green-400">{{ available_slots }}</h3>
+                <span class="text-4xs text-slate-400 font-semibold">/ {{ total_slots }}</span>
+            </div>
+        </div>
+        <!-- Occupied Slots -->
+        <div class="glass-panel p-4.5 rounded-2xl border">
+            <p class="text-3xs font-bold text-slate-400 uppercase tracking-widest">Occupied Slots</p>
+            <div class="flex items-baseline gap-2 mt-1">
+                <h3 class="text-2xl font-bold text-red-650 dark:text-red-400">{{ occupied_slots }}</h3>
+                <span class="text-4xs text-slate-400 font-semibold">/ {{ total_slots }}</span>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 1. TAB: Analytics Dashboard -->
+    <div id="tab-analytics" class="tab-content space-y-8">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Daily Booking Trend Line Chart -->
+            <div class="glass-panel p-5 rounded-2xl border lg:col-span-2 space-y-4">
+                <h3 class="font-bold text-sm text-slate-700 dark:text-slate-350">7-Day Booking Trends</h3>
+                <div class="h-64">
+                    <canvas id="dailyTrendsChart"></canvas>
+                </div>
+            </div>
+            
+            <!-- Slot Usage Pie Chart -->
+            <div class="glass-panel p-5 rounded-2xl border space-y-4">
+                <h3 class="font-bold text-sm text-slate-700 dark:text-slate-350">Slot Occupancy by Category</h3>
+                <div class="h-64 flex items-center justify-center">
+                    <canvas id="slotUsageChart"></canvas>
+                </div>
+            </div>
+            
+            <!-- Monthly Revenue Bar Chart -->
+            <div class="glass-panel p-5 rounded-2xl border lg:col-span-3 space-y-4">
+                <h3 class="font-bold text-sm text-slate-700 dark:text-slate-350">Monthly Revenue Tracker</h3>
+                <div class="h-64">
+                    <canvas id="monthlyRevenueChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 2. TAB: Slots Configurations -->
+    <div id="tab-slots" class="tab-content hidden space-y-6">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Create New Slot Form -->
+            <div class="glass-panel p-6 rounded-2xl border space-y-4 h-fit">
+                <h3 class="font-bold text-slate-800 dark:text-white">Create Parking Slot</h3>
+                <form action="{{ url_for('admin.create_slot') }}" method="POST" class="space-y-4">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <div class="space-y-1.5">
+                        <label for="slot_id" class="text-xs font-semibold text-slate-700 dark:text-slate-350">Slot ID</label>
+                        <input type="text" id="slot_id" name="slot_id" required placeholder="A-101"
+                               class="w-full glass-input px-3.5 py-2.5 rounded-xl text-xs uppercase">
+                    </div>
+                    
+                    <div class="space-y-1.5">
+                        <label for="floor" class="text-xs font-semibold text-slate-700 dark:text-slate-350">Floor Number</label>
+                        <select id="floor" name="floor" class="w-full glass-input px-3.5 py-2.5 rounded-xl text-xs dark:bg-slate-900">
+                            <option value="0">Ground Floor (L0)</option>
+                            <option value="1">1st Floor (L1)</option>
+                            <option value="2">2nd Floor (L2)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="space-y-1.5">
+                        <label for="type" class="text-xs font-semibold text-slate-700 dark:text-slate-350">Slot Type</label>
+                        <select id="type" name="type" class="w-full glass-input px-3.5 py-2.5 rounded-xl text-xs dark:bg-slate-900">
+                            <option value="Car">Car</option>
+                            <option value="Bike">Bike</option>
+                            <option value="Electric">Electric Vehicle</option>
+                            <option value="VIP">VIP Exclusive</option>
+                        </select>
+                    </div>
+                    
+                    <div class="space-y-1.5">
+                        <label for="status" class="text-xs font-semibold text-slate-700 dark:text-slate-350">Initial Status</label>
+                        <select id="status" name="status" class="w-full glass-input px-3.5 py-2.5 rounded-xl text-xs dark:bg-slate-900">
+                            <option value="Available">Available</option>
+                            <option value="Inactive">Inactive</option>
+                        </select>
+                    </div>
+                    
+                    <button type="submit" class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold shadow-lg transition-all">
+                        Create Slot
+                    </button>
+                </form>
+            </div>
+            
+            <!-- List and edit existing slots -->
+            <div class="glass-panel p-6 rounded-2xl border lg:col-span-2 space-y-4">
+                <h3 class="font-bold text-slate-800 dark:text-white">Active Grid Management</h3>
+                
+                <div class="overflow-y-auto max-h-[500px] pr-1">
+                    <table class="w-full text-left text-xs border-collapse">
+                        <thead>
+                            <tr class="border-b border-slate-100 dark:border-slate-800 text-slate-450 font-bold uppercase tracking-wider">
+                                <th class="py-3 px-2">Slot ID</th>
+                                <th class="py-3 px-2">Floor</th>
+                                <th class="py-3 px-2">Type</th>
+                                <th class="py-3 px-2">Status Control</th>
+                                <th class="py-3 px-2 text-right">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100 dark:divide-slate-800/80">
+                            {% for slot in all_slots %}
+                            <tr class="hover:bg-slate-50/50 dark:hover:bg-slate-900/10 transition-all">
+                                <td class="py-3 px-2 font-bold">{{ slot.id }}</td>
+                                <td class="py-3 px-2">L{{ slot.floor }}</td>
+                                <td class="py-3 px-2 font-medium">{{ slot.type }}</td>
+                                <td class="py-3 px-2">
+                                    <select onchange="updateStatus('{{ slot.id }}', this.value)" class="glass-input px-2 py-1 rounded-lg text-2xs dark:bg-slate-900">
+                                        <option value="Available" {% if slot.status == 'Available' %}selected{% endif %}>Available</option>
+                                        <option value="Occupied" {% if slot.status == 'Occupied' %}selected{% endif %}>Occupied</option>
+                                        <option value="Reserved" {% if slot.status == 'Reserved' %}selected{% endif %}>Reserved</option>
+                                        <option value="Inactive" {% if slot.status == 'Inactive' %}selected{% endif %}>Inactive</option>
+                                    </select>
+                                </td>
+                                <td class="py-3 px-2 text-right">
+                                    <form action="{{ url_for('admin.delete_slot', slot_id=slot.id) }}" method="POST" class="inline" onsubmit="return confirm('Delete slot {{ slot.id }}?')">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                        <button type="submit" class="text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/20 h-7 w-7 rounded-lg inline-flex items-center justify-center transition-all">
+                                            <i class="fas fa-trash-alt"></i>
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 3. TAB: Users Database -->
+    <div id="tab-users" class="tab-content hidden">
+        <div class="glass-panel p-6 rounded-2xl border space-y-4">
+            <h3 class="font-bold text-slate-800 dark:text-white">Registered Users Directory</h3>
+            
+            <div class="overflow-x-auto w-full">
+                <table class="w-full text-left text-xs border-collapse">
+                    <thead>
+                        <tr class="border-b border-slate-100 dark:border-slate-800 text-slate-450 font-bold uppercase tracking-wider">
+                            <th class="py-3 px-2">ID</th>
+                            <th class="py-3 px-2">Name</th>
+                            <th class="py-3 px-2">Email</th>
+                            <th class="py-3 px-2">Phone</th>
+                            <th class="py-3 px-2">Vehicles</th>
+                            <th class="py-3 px-2 text-right">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100 dark:divide-slate-800/80">
+                        {% for user in all_users %}
+                        <tr class="hover:bg-slate-50/50 dark:hover:bg-slate-900/10 transition-all text-slate-700 dark:text-slate-350">
+                            <td class="py-3 px-2">#{{ user.id }}</td>
+                            <td class="py-3 px-2 font-bold">{{ user.name }}</td>
+                            <td class="py-3 px-2">{{ user.email }}</td>
+                            <td class="py-3 px-2">{{ user.phone or '-' }}</td>
+                            <td class="py-3 px-2">
+                                <span class="px-2 py-0.5 rounded bg-indigo-50 dark:bg-indigo-950/50 text-indigo-650 dark:text-indigo-400 font-semibold">{{ user.vehicles|length }}</span>
+                            </td>
+                            <td class="py-3 px-2 text-right">
+                                <form action="{{ url_for('admin.delete_user', user_id=user.id) }}" method="POST" class="inline" onsubmit="return confirm('Are you sure you want to delete user {{ user.name }}? This will remove all their bookings and vehicles.')">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <button type="submit" class="text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/20 h-7 w-7 rounded-lg inline-flex items-center justify-center transition-all">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="6" class="py-8 text-center text-slate-400">No users found.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 4. TAB: Bookings Console -->
+    <div id="tab-bookings" class="tab-content hidden space-y-4">
+        <div class="glass-panel p-6 rounded-2xl border space-y-4">
+            <div class="flex items-center justify-between flex-wrap gap-4">
+                <h3 class="font-bold text-slate-800 dark:text-white">Active and Completed Passes</h3>
+                
+                <a href="{{ url_for('admin.export_pdf_report') }}" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold shadow text-xs transition-all flex items-center gap-1.5">
+                    <i class="fas fa-file-pdf"></i> Export Booking Report (PDF)
+                </a>
+            </div>
+            
+            <div class="overflow-x-auto w-full">
+                <table class="w-full text-left text-xs border-collapse">
+                    <thead>
+                        <tr class="border-b border-slate-100 dark:border-slate-800 text-slate-450 font-bold uppercase tracking-wider">
+                            <th class="py-3 px-2">ID</th>
+                            <th class="py-3 px-2">User Email</th>
+                            <th class="py-3 px-2">Slot</th>
+                            <th class="py-3 px-2">Vehicle</th>
+                            <th class="py-3 px-2">Billed Time</th>
+                            <th class="py-3 px-2">Total Billed</th>
+                            <th class="py-3 px-2">Status</th>
+                            <th class="py-3 px-2 text-right">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100 dark:divide-slate-800/80 text-slate-700 dark:text-slate-350">
+                        {% for b in all_bookings %}
+                        <tr class="hover:bg-slate-50/50 dark:hover:bg-slate-900/10 transition-all">
+                            <td class="py-3.5 px-2">#{{ b.id }}</td>
+                            <td class="py-3.5 px-2 font-semibold">
+                                <!-- Fetch email -->
+                                {% set user_obj = all_users|selectattr("id", "equalto", b.user_id)|first %}
+                                {{ user_obj.email if user_obj else 'Deleted User' }}
+                            </td>
+                            <td class="py-3.5 px-2 font-bold text-indigo-600 dark:text-indigo-400">{{ b.slot_id }}</td>
+                            <td class="py-3.5 px-2 font-medium">{{ b.vehicle_number }} ({{ b.vehicle_type }})</td>
+                            <td class="py-3.5 px-2">
+                                {{ b.entry_time.strftime('%m-%d %H:%M') }} to {{ b.exit_time.strftime('%m-%d %H:%M') }}
+                            </td>
+                            <td class="py-3.5 px-2 font-bold">₹{{ b.total_amount }}</td>
+                            <td class="py-3.5 px-2">
+                                <span class="px-2.5 py-0.5 rounded-full font-bold text-3xs
+                                    {% if b.status == 'Active' %}bg-emerald-100 text-emerald-800 dark:bg-emerald-950/30 dark:text-emerald-450
+                                    {% elif b.status == 'Completed' %}bg-blue-100 text-blue-800 dark:bg-blue-950/30 dark:text-blue-450
+                                    {% else %}bg-slate-100 text-slate-650 dark:bg-slate-800/30 dark:text-slate-400{% endif %}">
+                                    {{ b.status }}
+                                </span>
+                            </td>
+                            <td class="py-3.5 px-2 text-right">
+                                {% if b.status == 'Active' %}
+                                <form action="{{ url_for('booking.cancel_booking', booking_id=b.id) }}" method="POST" class="inline" onsubmit="return confirm('Cancel booking pass #{{ b.id }}?')">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <button type="submit" class="text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/20 h-7 w-7 rounded-lg inline-flex items-center justify-center transition-all" title="Cancel Booking">
+                                        <i class="fas fa-times-circle"></i>
+                                    </button>
+                                </form>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="8" class="py-8 text-center text-slate-400">No bookings recorded.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Include Chart.js via CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+// Switch Tabs
+function switchTab(tabId) {
+    // Hide all tab contents
+    document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+    // Show selected tab content
+    document.getElementById(`tab-${tabId}`).classList.remove('hidden');
+    
+    // Toggle active styles on buttons
+    const btns = document.querySelectorAll('[id^="tab-btn-"]');
+    btns.forEach(btn => {
+        btn.className = "px-4 py-2 text-xs font-bold rounded-lg transition-all focus:outline-none text-slate-500 hover:text-slate-700 dark:hover:text-slate-350";
+    });
+    
+    const activeBtn = document.getElementById(`tab-btn-${tabId}`);
+    if (activeBtn) {
+        activeBtn.className = "px-4 py-2 text-xs font-bold rounded-lg transition-all focus:outline-none bg-white dark:bg-slate-800 shadow text-slate-800 dark:text-white";
+    }
+}
+
+// Update Slot Status dynamically via Fetch API
+function updateStatus(slotId, newStatus) {
+    const csrfToken = "{{ csrf_token() }}";
+    const formData = new FormData();
+    formData.append('status', newStatus);
+    
+    fetch(`/admin/slots/update-status/${slotId}`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': csrfToken
+        },
+        body: formData
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.status === 'success') {
+            showToast('Success', data.message, 'success');
+        } else {
+            showToast('Error', data.message || 'Failed to update status', 'danger');
+        }
+    })
+    .catch(err => {
+        console.error('Error updating status:', err);
+        showToast('Error', 'Failed to communicate with server.', 'danger');
+    });
+}
+
+// Initialize Charts
+document.addEventListener('DOMContentLoaded', () => {
+    // Check theme to customize charts (dark mode gridlines/labels)
+    const isDark = document.documentElement.classList.contains('dark');
+    const gridColor = isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.05)';
+    const textColor = isDark ? '#94a3b8' : '#64748b';
+    
+    // Fetch data from API
+    fetch('/admin/analytics-data')
+    .then(res => res.json())
+    .then(analytics => {
+        
+        // 1. Daily Trends Line Chart
+        new Chart(document.getElementById('dailyTrendsChart').getContext('2d'), {
+            type: 'line',
+            data: {
+                labels: analytics.daily_trends.labels,
+                datasets: [{
+                    label: 'Bookings Count',
+                    data: analytics.daily_trends.data,
+                    borderColor: 'rgb(79, 70, 229)',
+                    backgroundColor: 'rgba(79, 70, 229, 0.1)',
+                    tension: 0.3,
+                    fill: true,
+                    borderWidth: 2.5
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    x: {
+                        grid: { color: gridColor },
+                        ticks: { color: textColor, font: { family: 'Outfit', size: 10 } }
+                    },
+                    y: {
+                        grid: { color: gridColor },
+                        ticks: { color: textColor, font: { family: 'Outfit', size: 10 } },
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+        
+        // 2. Slot Usage Pie/Doughnut Chart
+        new Chart(document.getElementById('slotUsageChart').getContext('2d'), {
+            type: 'doughnut',
+            data: {
+                labels: analytics.slot_usage.labels,
+                datasets: [{
+                    data: analytics.slot_usage.data,
+                    backgroundColor: [
+                        'rgba(79, 70, 229, 0.75)',  // Indigo
+                        'rgba(16, 185, 129, 0.75)',  // Emerald
+                        'rgba(245, 158, 11, 0.75)',  // Amber
+                        'rgba(139, 92, 246, 0.75)'   // Violet
+                    ],
+                    borderColor: isDark ? '#0f172a' : '#ffffff',
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            color: textColor,
+                            font: { family: 'Outfit', size: 10 }
+                        }
+                    }
+                }
+            }
+        });
+        
+        // 3. Monthly Revenue Bar Chart
+        new Chart(document.getElementById('monthlyRevenueChart').getContext('2d'), {
+            type: 'bar',
+            data: {
+                labels: analytics.monthly_revenue.labels,
+                datasets: [{
+                    label: 'Revenue (₹)',
+                    data: analytics.monthly_revenue.data,
+                    backgroundColor: 'rgba(99, 102, 241, 0.8)',
+                    borderRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    x: {
+                        grid: { display: false },
+                        ticks: { color: textColor, font: { family: 'Outfit', size: 10 } }
+                    },
+                    y: {
+                        grid: { color: gridColor },
+                        ticks: { color: textColor, font: { family: 'Outfit', size: 10 } },
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+        
+    })
+    .catch(err => console.error('Error fetching analytics:', err));
+});
+</script>
+{% endblock %}

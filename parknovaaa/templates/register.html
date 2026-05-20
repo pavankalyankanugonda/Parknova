@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+
+{% block title %}Sign Up - ParkNova{% endblock %}
+
+{% block content %}
+<div class="max-w-md mx-auto py-8">
+    
+    <!-- Register Card -->
+    <div class="glass-panel p-8 rounded-3xl border shadow-xl animate-fade-in">
+        <div class="text-center space-y-2 mb-8">
+            <h1 class="text-2xl font-extrabold text-slate-800 dark:text-white">Create Account</h1>
+            <p class="text-sm text-slate-500 dark:text-slate-400">Join ParkNova for seamless parking reservations</p>
+        </div>
+        
+        <form action="{{ url_for('auth.register') }}" method="POST" class="space-y-4">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            
+            <!-- Full Name Input -->
+            <div class="space-y-1.5">
+                <label for="name" class="text-sm font-semibold text-slate-700 dark:text-slate-350">Full Name</label>
+                <div class="relative">
+                    <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400">
+                        <i class="fas fa-user"></i>
+                    </span>
+                    <input type="text" id="name" name="name" required placeholder="John Doe"
+                           class="w-full glass-input pl-10 pr-4 py-3 rounded-xl text-sm">
+                </div>
+            </div>
+            
+            <!-- Email Input -->
+            <div class="space-y-1.5">
+                <label for="email" class="text-sm font-semibold text-slate-700 dark:text-slate-350">Email Address</label>
+                <div class="relative">
+                    <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400">
+                        <i class="fas fa-envelope"></i>
+                    </span>
+                    <input type="email" id="email" name="email" required placeholder="john@example.com"
+                           class="w-full glass-input pl-10 pr-4 py-3 rounded-xl text-sm">
+                </div>
+            </div>
+            
+            <!-- Phone Input -->
+            <div class="space-y-1.5">
+                <label for="phone" class="text-sm font-semibold text-slate-700 dark:text-slate-350">Phone Number</label>
+                <div class="relative">
+                    <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400">
+                        <i class="fas fa-phone"></i>
+                    </span>
+                    <input type="tel" id="phone" name="phone" placeholder="+91 9876543210"
+                           class="w-full glass-input pl-10 pr-4 py-3 rounded-xl text-sm">
+                </div>
+            </div>
+            
+            <!-- Password Input -->
+            <div class="space-y-1.5">
+                <label for="password" class="text-sm font-semibold text-slate-700 dark:text-slate-350">Password</label>
+                <div class="relative">
+                    <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400">
+                        <i class="fas fa-lock"></i>
+                    </span>
+                    <input type="password" id="password" name="password" required placeholder="••••••••"
+                           class="w-full glass-input pl-10 pr-4 py-3 rounded-xl text-sm">
+                </div>
+            </div>
+            
+            <!-- Submit Button -->
+            <button type="submit" class="w-full py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold shadow-lg shadow-indigo-600/20 transition-all mt-4">
+                Sign Up
+            </button>
+        </form>
+        
+        <!-- Login Footer -->
+        <div class="text-center mt-6 pt-6 border-t border-slate-100 dark:border-slate-800">
+            <p class="text-sm text-slate-550 dark:text-slate-400">
+                Already have an account? 
+                <a href="{{ url_for('auth.login') }}" class="font-bold text-indigo-600 dark:text-indigo-400 hover:underline">Log in</a>
+            </p>
+        </div>
+    </div>
+    
+</div>
+{% endblock %}

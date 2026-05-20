@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: html}">
+<head th:replace="~{layout :: head}"></head>
+<body>
+  <main th:fragment="content" class="space-y-12 animate-in fade-in slide-in-from-bottom-5 duration-700">
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center bg-white dark:bg-gray-800 p-8 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700">
+      <div class="space-y-2">
+        <h2 class="text-3xl font-black text-gray-900 dark:text-white flex items-center space-x-4">
+           <i class="fas fa-receipt text-blue-600"></i>
+           <span>Transaction Logs</span>
+        </h2>
+        <p class="text-gray-500 dark:text-gray-400">Complete audit trail of all parkings and revenue streams.</p>
+      </div>
+    </div>
+
+    <!-- Bookings Feed -->
+    <div class="overflow-x-auto rounded-[2.5rem] border-2 border-white/20 dark:border-white/10 shadow-2xl bg-white/50 dark:bg-gray-900/50 backdrop-blur-xl">
+      <table class="w-full text-left">
+        <thead>
+          <tr class="bg-gray-100/50 dark:bg-gray-800/50 text-gray-500 dark:text-gray-400 uppercase text-[10px] font-black tracking-[0.2em] border-b border-gray-100 dark:border-gray-800">
+            <th class="px-8 py-6">ID</th>
+            <th class="px-8 py-6">Reference Token</th>
+            <th class="px-8 py-6">User / Identity</th>
+            <th class="px-8 py-6">Parking Node</th>
+            <th class="px-8 py-6">Session Timeline</th>
+            <th class="px-8 py-6">Status</th>
+            <th class="px-8 py-6">Economics</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
+          <tr th:each="booking : ${bookings}" class="hover:bg-blue-50/30 dark:hover:bg-blue-900/10 transition-all">
+            <td class="px-8 py-6 text-[10px] text-gray-400 font-bold opacity-60" th:text="${booking.id}">1</td>
+            <td class="px-8 py-6 flex flex-col">
+              <span class="text-sm font-black text-gray-900 dark:text-white" th:text="${booking.qrCode}">PKN-XXXXX</span>
+            </td>
+            <td class="px-8 py-6">
+               <div class="flex items-center space-x-3">
+                  <div class="bg-blue-100 dark:bg-blue-900/50 p-2 rounded-lg text-blue-600 text-xs font-bold" th:text="${#strings.substring(booking.user.username,0,1).toUpperCase()}">U</div>
+                  <div class="flex flex-col">
+                    <span class="text-sm font-bold text-gray-700 dark:text-gray-300" th:text="${booking.user.fullName}">John Doe</span>
+                    <span class="text-[10px] text-gray-400 font-bold uppercase tracking-widest" th:text="${booking.user.email}">user@test.com</span>
+                  </div>
+               </div>
+            </td>
+            <td class="px-8 py-6">
+              <span class="px-4 py-2 bg-gray-100 dark:bg-gray-800 rounded-xl text-xs font-bold text-gray-500" th:text="${booking.slot.slotNumber}">A-101</span>
+            </td>
+            <td class="px-8 py-6">
+              <div class="flex flex-col text-xs font-medium space-y-1">
+                <span class="text-emerald-600 dark:text-emerald-400 flex items-center space-x-2">
+                   <i class="fas fa-sign-in-alt opacity-50"></i>
+                   <span th:text="${#temporals.format(booking.startTime, 'MMM dd, HH:mm')}">Entry</span>
+                </span>
+                <span th:if="${booking.endTime != null}" class="text-blue-600 dark:text-blue-400 flex items-center space-x-2">
+                   <i class="fas fa-sign-out-alt opacity-50"></i>
+                   <span th:text="${#temporals.format(booking.endTime, 'MMM dd, HH:mm')}">Exit</span>
+                </span>
+                <span th:if="${booking.endTime == null}" class="text-gray-400 animate-pulse italic">Active session...</span>
+              </div>
+            </td>
+            <td class="px-8 py-6">
+              <span th:if="${booking.active}" class="px-4 py-2 bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400 rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center space-x-2 w-fit">
+                   <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-ping"></span>
+                   <span>In Session</span>
+              </span>
+              <span th:if="${!booking.active}" class="px-4 py-2 bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400 rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center space-x-2 w-fit">
+                   <span>Completed</span>
+              </span>
+            </td>
+            <td class="px-8 py-6">
+              <span class="text-lg font-black text-blue-600 dark:text-blue-400" th:text="${booking.totalFee != null ? '₹' + booking.totalFee : '---'}">₹0</span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </main>
+</body>
+</html>

@@ -1,0 +1,112 @@
+{% extends 'base.html' %}
+
+{% block title %}Parking Pass #{{ booking.id }} - ParkNova{% endblock %}
+
+{% block extra_css %}
+<style>
+@media print {
+    body * {
+        visibility: hidden;
+    }
+    #printable-pass, #printable-pass * {
+        visibility: visible;
+    }
+    #printable-pass {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        border: none;
+        box-shadow: none;
+        background: white;
+        color: black;
+    }
+    .no-print {
+        display: none !important;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-md mx-auto py-6 space-y-6">
+    
+    <!-- Navigation back -->
+    <div class="no-print">
+        <a href="{{ url_for('user.dashboard') }}" class="inline-flex items-center gap-2 text-sm font-semibold text-slate-500 hover:text-indigo-650 transition-colors">
+            <i class="fas fa-arrow-left text-xs"></i> Back to Dashboard
+        </a>
+    </div>
+    
+    <!-- Parking Ticket Pass Card -->
+    <div id="printable-pass" class="glass-panel rounded-3xl border border-indigo-150 dark:border-indigo-900/60 shadow-2xl relative overflow-hidden p-8 flex flex-col items-center gap-6">
+        
+        <!-- Ticket Header decoration -->
+        <div class="absolute top-0 inset-x-0 h-2 bg-indigo-600"></div>
+        
+        <!-- Pass Branding -->
+        <div class="text-center space-y-1">
+            <div class="h-10 w-10 bg-indigo-600 text-white rounded-xl flex items-center justify-center text-lg mx-auto shadow-md">
+                <i class="fas fa-parking"></i>
+            </div>
+            <h2 class="text-xl font-black tracking-tight text-slate-800 dark:text-white mt-2">PARKNOVA PASS</h2>
+            <p class="text-3xs font-semibold text-indigo-650 dark:text-indigo-400 uppercase tracking-widest">Digital Entry Permit</p>
+        </div>
+        
+        <!-- QR Code -->
+        <div class="relative bg-white border border-slate-100 p-3 rounded-2xl shadow-inner w-56 h-56 flex items-center justify-center mt-2">
+            <img class="w-full h-full object-contain" src="{{ url_for('static', filename=booking.qr_code) }}" alt="QR Entry Code">
+        </div>
+        
+        <!-- Booking ID Tag -->
+        <div class="px-4 py-1.5 bg-slate-100 dark:bg-slate-800 rounded-full font-extrabold text-sm tracking-wide text-slate-700 dark:text-slate-300">
+            Booking ID: #{{ booking.id }}
+        </div>
+        
+        <!-- Ticket Grid Details -->
+        <div class="w-full border-t border-b border-dashed border-slate-200 dark:border-slate-800 py-4 grid grid-cols-2 gap-y-4 text-sm">
+            <div class="pl-2">
+                <span class="text-3xs uppercase tracking-wider text-slate-400 font-semibold block">Slot ID</span>
+                <span class="font-extrabold text-indigo-650 dark:text-indigo-400 text-base">{{ booking.slot_id }}</span>
+            </div>
+            <div class="pl-2 border-l border-slate-100 dark:border-slate-800">
+                <span class="text-3xs uppercase tracking-wider text-slate-400 font-semibold block">Vehicle Number</span>
+                <span class="font-bold text-slate-750 dark:text-slate-300 text-base truncate block">{{ booking.vehicle_number }}</span>
+            </div>
+            <div class="pl-2 border-t border-slate-100 dark:border-slate-800/80 pt-3 col-span-2">
+                <span class="text-3xs uppercase tracking-wider text-slate-400 font-semibold block">Valid From</span>
+                <span class="font-semibold text-slate-750 dark:text-slate-300">{{ booking.entry_time.strftime('%Y-%m-%d %H:%M') }}</span>
+            </div>
+            <div class="pl-2 border-t border-slate-100 dark:border-slate-800/80 pt-3 col-span-2">
+                <span class="text-3xs uppercase tracking-wider text-slate-400 font-semibold block">Valid Until</span>
+                <span class="font-semibold text-slate-750 dark:text-slate-300">{{ booking.exit_time.strftime('%Y-%m-%d %H:%M') }}</span>
+            </div>
+            <div class="pl-2 border-t border-slate-100 dark:border-slate-800/80 pt-3">
+                <span class="text-3xs uppercase tracking-wider text-slate-400 font-semibold block">Vehicle Type</span>
+                <span class="font-bold text-slate-700 dark:text-slate-350">{{ booking.vehicle_type }}</span>
+            </div>
+            <div class="pl-2 border-t border-l border-slate-100 dark:border-slate-800 pt-3">
+                <span class="text-3xs uppercase tracking-wider text-slate-400 font-semibold block">Total Paid</span>
+                <span class="font-extrabold text-slate-750 dark:text-slate-300 text-indigo-600 dark:text-indigo-400">₹{{ booking.total_amount }}</span>
+            </div>
+        </div>
+        
+        <!-- Info Alert -->
+        <p class="text-center text-4xs text-slate-400 leading-normal max-w-xs">
+            Present this QR code to the scanner at the gate to gain entry/exit. Double bookings are prohibited. Standard terms & conditions apply.
+        </p>
+    </div>
+    
+    <!-- Printable Actions -->
+    <div class="grid grid-cols-2 gap-4 no-print">
+        <button onclick="window.print()" class="py-3 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl font-bold transition-all flex items-center justify-center gap-2">
+            <i class="fas fa-print"></i> Print Ticket
+        </button>
+        <a href="{{ url_for('static', filename=booking.qr_code) }}" download="ParkNova_Pass_{{ booking.id }}.png"
+           class="py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold transition-all flex items-center justify-center gap-2 text-center shadow-lg shadow-indigo-600/10">
+            <i class="fas fa-download"></i> Download QR
+        </a>
+    </div>
+    
+</div>
+{% endblock %}
